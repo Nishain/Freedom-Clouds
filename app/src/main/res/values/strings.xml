@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Freedom Clouds</string>
+    <string name="title_activity_slash_screen">SlashScreen</string>
+    <!-- Strings used for fragments for navigation -->
+</resources>
