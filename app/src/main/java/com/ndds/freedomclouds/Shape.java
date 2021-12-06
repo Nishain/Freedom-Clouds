@@ -108,7 +108,7 @@ public class Shape {
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
     private int vPMatrixHandle;
     float[] color = { 1.0f, 1.0f, 1.0f, 1.0f };
-    public void draw(float[] mvpMatrix,int texture) {
+    public void draw(float[] mvpMatrix,int texture1,int texture2,float blendFactor) {
         // Add program to OpenGL ES environment
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
         GLES20.glUseProgram(mProgram);
@@ -116,25 +116,33 @@ public class Shape {
         // get handle to vertex shader's vPosition member
         positionHandle = GLES20.glGetAttribLocation(mProgram, "vPosition");
         int textureHandle = GLES20.glGetUniformLocation(mProgram, "uTexture");
+        int textureHandle2 = GLES20.glGetUniformLocation(mProgram, "uTexture2");
         int texturePositionHandle = GLES20.glGetAttribLocation(mProgram, "aTexPosition");
 
         GLES20.glVertexAttribPointer(texturePositionHandle, 2, GLES20.GL_FLOAT, false, 0, textureBuffer);
         GLES20.glEnableVertexAttribArray(texturePositionHandle);
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture1);
         GLES20.glUniform1i(textureHandle, 0);
-
-
+        if(texture2 != -99) {
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture2);
+            GLES20.glUniform1i(textureHandle2, 1);
+            int textureMixHandle  = GLES20.glGetUniformLocation(mProgram,"textureMix");
+            GLES20.glUniform1f(textureMixHandle,blendFactor);
+        }
 
         // Prepare the triangle coordinate data
         GLES20.glVertexAttribPointer(positionHandle, COORDS_PER_VERTEX,
                 GLES20.GL_FLOAT, false,
                 vertexStride, vertexBuffer);
         int isTextureHandle  = GLES20.glGetUniformLocation(mProgram,"textured");
+
         colorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
         GLES20.glUniform4fv(colorHandle, 1, color, 0);
         GLES20.glUniform1f(isTextureHandle,1.0f);
+
         // Enable a handle to the triangle vertices
         GLES20.glEnableVertexAttribArray(positionHandle);
         // get handle to fragment shader's vColor member

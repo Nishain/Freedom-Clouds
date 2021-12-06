@@ -55,12 +55,14 @@ class CustomRenderer implements GLSurfaceView.Renderer {
     public final static String fragmentShaderCode =
             "precision mediump float;" +
                     "uniform sampler2D uTexture;" +
+                    "uniform sampler2D uTexture2;" +
                     "varying vec2 vTexPosition;" +
                     "uniform float textured;" +
+                    "uniform float textureMix;" +
                     "uniform vec4 vColor;" +
 //                    "uniform vec4 vColor;" +
                     "void main() {" +
-                    "  gl_FragColor = vColor * mix(vec4(1.0), texture2D(uTexture, vTexPosition), textured);" +//texture2D(uTexture, vTexPosition);,  vColor;
+                    "  gl_FragColor = vColor * mix(vec4(1.0), mix(texture2D(uTexture, vTexPosition),texture2D(uTexture2, vTexPosition),textureMix), textured);" +//texture2D(uTexture, vTexPosition);,  vColor;
                     "}";
     public final static String vertexColorShaderCode =
             "uniform mat4 uMVPMatrix;" +
@@ -143,6 +145,8 @@ class CustomRenderer implements GLSurfaceView.Renderer {
         // in the onDrawFrame() method
         Matrix.frustumM(projectionMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
     }
+    float blendFactor = 0.0f;
+    boolean doGlow = false;
     @Override
     public void onDrawFrame(GL10 gl) {
 //        GLES10.glClearDepth(1.0);
@@ -156,9 +160,20 @@ class CustomRenderer implements GLSurfaceView.Renderer {
 
         // Create a rotation transformation for the triangle
         Matrix.setIdentityM(rotationMatrix,0);
+        if(doGlow){
+            if(blendFactor < 1.0f)
+                blendFactor += 0.05f;
+            else{
+//                blendFactor = 0.0f;
+                doGlow = false;
+                if(!surfaceView.autoRotate){
+                    surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+                    surfaceView.requestRender();
+                }
+            }
+        }
         if(surfaceView.autoRotate){
-
-                if ((Math.abs(mAngle)) > 5) {
+                if ((Math.abs(mAngle) % 360) > 5) {
                     if (mAngle > 0)
                         mAngle -= 5;
                     else
@@ -180,9 +195,9 @@ class CustomRenderer implements GLSurfaceView.Renderer {
         int vPMatrixHandle = GLES20.glGetUniformLocation(program, "uMVPMatrix");
         // Pass the projection and view transformation to the shader
         GLES20.glUniformMatrix4fv(vPMatrixHandle, 1, false, scratch, 0);
-        mSquare.draw(scratch,textures[0]);
+        mSquare.draw(scratch,textures[0],textures[1],blendFactor);
         circleOutline.draw(scratch);
-        mSquare2.draw(scratch,textures[1]);
+        mSquare2.draw(scratch,textures[1],-99,0);
 
 
     }

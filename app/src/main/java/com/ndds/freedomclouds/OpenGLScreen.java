@@ -8,6 +8,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
+import android.os.Handler;
 import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -36,6 +37,13 @@ public class OpenGLScreen extends GLSurfaceView {
     private final float TOUCH_SCALE_FACTOR = 180.0f / 320;
     private float previousX;
     private float previousY;
+    private Handler handler = new Handler();
+    public void glow(){
+        customRenderer.blendFactor = 0.0f;
+        customRenderer.doGlow = true;
+        setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+        requestRender();
+    }
     @Override
     public boolean onTouchEvent(MotionEvent e) {
         float x = e.getX();
@@ -44,13 +52,19 @@ public class OpenGLScreen extends GLSurfaceView {
         switch (e.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 this.autoRotate = false;
+                handler.removeCallbacksAndMessages(null);
                 setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
                 requestRender();
                 break;
             case MotionEvent.ACTION_UP:
-                this.autoRotate = true;
-                setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
-                requestRender();
+                this.handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        OpenGLScreen.this.autoRotate = true;
+                        setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+                        requestRender();
+                    }
+                },1000);
                 break;
             case MotionEvent.ACTION_MOVE:
 
