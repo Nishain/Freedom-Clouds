@@ -37,12 +37,16 @@ public class OpenGLScreen extends GLSurfaceView {
     private final float TOUCH_SCALE_FACTOR = 180.0f / 320;
     private float previousX;
     private float previousY;
+    public boolean quickSpinEnabled = false;
     private Handler handler = new Handler();
     public void glow(){
         customRenderer.blendFactor = 0.0f;
-        customRenderer.doGlow = true;
+        customRenderer.doGlow = 1;
         setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
         requestRender();
+    }
+    public void quickSpin(){
+        quickSpinEnabled = true;
     }
     @Override
     public boolean onTouchEvent(MotionEvent e) {
@@ -60,6 +64,8 @@ public class OpenGLScreen extends GLSurfaceView {
                 this.handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
+                        if(OpenGLScreen.this.customRenderer.quickSpinAngle > 0)
+                            return;
                         OpenGLScreen.this.autoRotate = true;
                         setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
                         requestRender();

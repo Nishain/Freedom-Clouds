@@ -13,7 +13,7 @@ import java.util.ArrayList;
 
 import javax.microedition.khronos.opengles.GL10;
 
-public class Shape {
+public class Circle {
 
     private FloatBuffer vertexBuffer;
     private FloatBuffer textureBuffer;
@@ -27,7 +27,7 @@ public class Shape {
 
     private int mProgram = 0;
 
-    public Shape(float depth,int program) {
+    public Circle(float depth, int program) {
         mProgram = program;
         float[] pos=new float[(360 * 9)];
         float[] textureCood = new float[360 * 6];
@@ -125,12 +125,14 @@ public class Shape {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture1);
         GLES20.glUniform1i(textureHandle, 0);
+        int textureMixHandle  = GLES20.glGetUniformLocation(mProgram,"textureMix");
         if(texture2 != -99) {
             GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture2);
             GLES20.glUniform1i(textureHandle2, 1);
-            int textureMixHandle  = GLES20.glGetUniformLocation(mProgram,"textureMix");
             GLES20.glUniform1f(textureMixHandle,blendFactor);
+        }else{
+            GLES20.glUniform1f(textureMixHandle,0.0f);
         }
 
         // Prepare the triangle coordinate data
@@ -166,5 +168,6 @@ public class Shape {
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(positionHandle);
         GLES20.glDisableVertexAttribArray(texturePositionHandle);
+
     }
 }

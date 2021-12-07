@@ -7,12 +7,8 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
-import android.os.SystemClock;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
+import android.util.Log;
+import android.widget.Toast;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -20,7 +16,7 @@ import javax.microedition.khronos.opengles.GL10;
 class CustomRenderer implements GLSurfaceView.Renderer {
     public volatile float mAngle;
     Context context;
-    private Shape mSquare2;
+    private Circle mSquare2;
     private int program;
     private CircleOutline circleOutline;
     OpenGLScreen surfaceView;
@@ -78,7 +74,7 @@ class CustomRenderer implements GLSurfaceView.Renderer {
                     "  gl_FragColor = vColor;" +
                     "}";
 
-    private Shape mSquare;
+    private Circle mSquare;
 
     public static int loadShader(int type, String shaderCode){
 
@@ -92,41 +88,41 @@ class CustomRenderer implements GLSurfaceView.Renderer {
 
         return shader;
     }
-    private int textures[] = new int[2];
+    private int textures[] = new int[3];
     private Bitmap flipImage(Bitmap bitmap){
         android.graphics.Matrix matrix = new android.graphics.Matrix();
         matrix.postRotate(180);
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
     }
+    private Bitmap getImage(int resourceCode){
+        Bitmap photo = BitmapFactory.decodeResource(context.getResources(),resourceCode);
+        photo = flipImage(photo);
+        return photo;
+    }
+
+    private void bindPicture(Bitmap picture,int index){
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[index]);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+
+        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, picture, 0);
+    }
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
-        GLES20.glGenTextures(2, textures, 0);
+        GLES20.glGenTextures(3, textures, 0);
 
-        Bitmap photo = BitmapFactory.decodeResource(context.getResources(), R.drawable.emblem_plain);
-        photo = flipImage(photo);
-        Bitmap photo2 = BitmapFactory.decodeResource(context.getResources(), R.drawable.emble_glowm);
-        photo2 = flipImage(photo2);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
-
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, photo, 0);
-
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[1]);
-
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, photo2, 0);
+        Bitmap photo = getImage(R.drawable.emblem_plain);
+        Bitmap photo2 = getImage(R.drawable.emblem_back);
+        Bitmap photo3 = getImage(R.drawable.emble_glowm);
+        bindPicture(photo,0);
+        bindPicture(photo2,1);
+        bindPicture(photo3,2);
         program = GLES20.glCreateProgram();
-        mSquare = new Shape(- 0.0625f,program);
-        mSquare2 = new Shape( 0.0625f,program);
+        mSquare = new Circle(- 0.0625f,program);
+        mSquare2 = new Circle( 0.0625f,program);
         circleOutline = new CircleOutline(0.0625f,program);
 
 //        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -146,7 +142,8 @@ class CustomRenderer implements GLSurfaceView.Renderer {
         Matrix.frustumM(projectionMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
     }
     float blendFactor = 0.0f;
-    boolean doGlow = false;
+    int doGlow = 0;
+    float quickSpinAngle = 0;
     @Override
     public void onDrawFrame(GL10 gl) {
 //        GLES10.glClearDepth(1.0);
@@ -160,19 +157,31 @@ class CustomRenderer implements GLSurfaceView.Renderer {
 
         // Create a rotation transformation for the triangle
         Matrix.setIdentityM(rotationMatrix,0);
-        if(doGlow){
-            if(blendFactor < 1.0f)
-                blendFactor += 0.05f;
+        if(quickSpinAngle > 0){
+            quickSpinAngle -= 10;
+            mAngle+= 10;
+            if(quickSpinAngle <= 0){
+                doGlow = -1;
+            }
+        }
+        if(doGlow != 0){
+            if((doGlow == 1 && blendFactor < 1.0f) || (doGlow==-1 && blendFactor > 0.0f))
+                    blendFactor += (doGlow * 0.05f);
             else{
+//                if(doGlow == -1)
+//                    Log.d("info",)
+                quickSpinAngle = (360 * 3) - (mAngle % 360);
+                quickSpinAngle *= doGlow;
 //                blendFactor = 0.0f;
-                doGlow = false;
-                if(!surfaceView.autoRotate){
+
+                doGlow = 0;
+                if((quickSpinAngle < 0) && !surfaceView.autoRotate){
                     surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
                     surfaceView.requestRender();
                 }
             }
         }
-        if(surfaceView.autoRotate){
+        if(surfaceView.autoRotate && quickSpinAngle < 1){
                 if ((Math.abs(mAngle) % 360) > 5) {
                     if (mAngle > 0)
                         mAngle -= 5;
@@ -195,7 +204,7 @@ class CustomRenderer implements GLSurfaceView.Renderer {
         int vPMatrixHandle = GLES20.glGetUniformLocation(program, "uMVPMatrix");
         // Pass the projection and view transformation to the shader
         GLES20.glUniformMatrix4fv(vPMatrixHandle, 1, false, scratch, 0);
-        mSquare.draw(scratch,textures[0],textures[1],blendFactor);
+        mSquare.draw(scratch,textures[0],textures[2],blendFactor);
         circleOutline.draw(scratch);
         mSquare2.draw(scratch,textures[1],-99,0);
 
