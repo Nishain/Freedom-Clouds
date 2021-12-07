@@ -88,7 +88,7 @@ class CustomRenderer implements GLSurfaceView.Renderer {
 
         return shader;
     }
-    private int textures[] = new int[3];
+    private int textures[] = new int[5];
     private Bitmap flipImage(Bitmap bitmap){
         android.graphics.Matrix matrix = new android.graphics.Matrix();
         matrix.postRotate(180);
@@ -112,14 +112,19 @@ class CustomRenderer implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
-        GLES20.glGenTextures(3, textures, 0);
+        GLES20.glGenTextures(5, textures, 0);
 
-        Bitmap photo = getImage(R.drawable.emblem_plain);
-        Bitmap photo2 = getImage(R.drawable.emblem_back);
-        Bitmap photo3 = getImage(R.drawable.emble_glowm);
-        bindPicture(photo,0);
-        bindPicture(photo2,1);
-        bindPicture(photo3,2);
+        Bitmap emblem1 = getImage(R.drawable.emblem_plain);
+        Bitmap emblem2 = getImage(R.drawable.emblem_plain2);
+        Bitmap emblem3 = getImage(R.drawable.emblem_plain3);
+        Bitmap emblemBack = getImage(R.drawable.emblem_back);
+        Bitmap glow = getImage(R.drawable.emble_glowm);
+
+        bindPicture(emblemBack,0);
+        bindPicture(glow,1);
+        bindPicture(emblem1,2);
+        bindPicture(emblem2,3);
+        bindPicture(emblem3,4);
         program = GLES20.glCreateProgram();
         mSquare = new Circle(- 0.0625f,program);
         mSquare2 = new Circle( 0.0625f,program);
@@ -144,6 +149,7 @@ class CustomRenderer implements GLSurfaceView.Renderer {
     float blendFactor = 0.0f;
     int doGlow = 0;
     float quickSpinAngle = 0;
+    boolean doQuickSpining = false;
     @Override
     public void onDrawFrame(GL10 gl) {
 //        GLES10.glClearDepth(1.0);
@@ -182,13 +188,13 @@ class CustomRenderer implements GLSurfaceView.Renderer {
             }
         }
         if(surfaceView.autoRotate && quickSpinAngle < 1){
-                if ((Math.abs(mAngle) % 360) > 5) {
+                if ((Math.abs(mAngle) % (360 * 3)) > 5) {
                     if (mAngle > 0)
                         mAngle -= 5;
                     else
                         mAngle += 5;
                 } else {
-                    mAngle = 0;
+                    mAngle = mAngle - (Math.abs(mAngle) % (360 * 3));
                     surfaceView.autoRotate = false;
                     surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
                     surfaceView.requestRender();
@@ -204,10 +210,17 @@ class CustomRenderer implements GLSurfaceView.Renderer {
         int vPMatrixHandle = GLES20.glGetUniformLocation(program, "uMVPMatrix");
         // Pass the projection and view transformation to the shader
         GLES20.glUniformMatrix4fv(vPMatrixHandle, 1, false, scratch, 0);
-        mSquare.draw(scratch,textures[0],textures[2],blendFactor);
+        int n = Math.abs((int) (mAngle/360));
+        if(quickSpinAngle > 0 || doGlow!=0)
+            mSquare.draw(scratch,textures[2],textures[1],blendFactor);
+        else
+            mSquare.draw(scratch,textures[2 + Math.abs(n%3)],textures[2 + Math.abs((n+ 1)%3)],calculateTransitionFadeFactor(Math.abs(mAngle) % 360));
         circleOutline.draw(scratch);
-        mSquare2.draw(scratch,textures[1],-99,0);
+        mSquare2.draw(scratch,textures[0],-99,0);
 
 
+    }
+    private float calculateTransitionFadeFactor(float angle){
+        return angle > 270 ? Math.min((angle - 270)/90,1.0f) : 0.0f;
     }
 }

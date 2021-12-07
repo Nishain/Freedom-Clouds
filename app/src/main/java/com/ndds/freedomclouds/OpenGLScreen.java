@@ -1,5 +1,6 @@
 package com.ndds.freedomclouds;
 
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
@@ -48,6 +49,12 @@ public class OpenGLScreen extends GLSurfaceView {
     public void quickSpin(){
         quickSpinEnabled = true;
     }
+    Handler idleHandler;
+    ObjectAnimator idleAnimator;
+    public void setIdleHandler(Handler handler, ObjectAnimator objectAnimator){
+        idleHandler = handler;
+        idleAnimator = objectAnimator;
+    }
     @Override
     public boolean onTouchEvent(MotionEvent e) {
         float x = e.getX();
@@ -56,15 +63,25 @@ public class OpenGLScreen extends GLSurfaceView {
         switch (e.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 this.autoRotate = false;
+                if(idleAnimator.isRunning())
+                    idleAnimator.cancel();
+                idleHandler.removeCallbacksAndMessages(null);
                 handler.removeCallbacksAndMessages(null);
                 setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
                 requestRender();
                 break;
             case MotionEvent.ACTION_UP:
+                this.idleHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(!idleAnimator.isStarted())
+                            idleAnimator.start();
+                    }
+                },5000);
                 this.handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        if(OpenGLScreen.this.customRenderer.quickSpinAngle > 0)
+                        if(OpenGLScreen.this.customRenderer.quickSpinAngle > 0 || OpenGLScreen.this.customRenderer.doGlow != 0)
                             return;
                         OpenGLScreen.this.autoRotate = true;
                         setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
