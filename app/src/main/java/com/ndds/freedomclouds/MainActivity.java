@@ -19,9 +19,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         //setContentView(R.layout.activity_main);
 //        OpenGLScreen openGLScreen = new OpenGLScreen(this);
+        overridePendingTransition(R.anim.push_down_anim,R.anim.push_up_anim);
         setContentView(R.layout.activity_main);
+
         openGLScreen = findViewById(R.id.gl_screen);
         openGLScreen.setZOrderOnTop(true);
         View v = findViewById(R.id.rotate_hint);

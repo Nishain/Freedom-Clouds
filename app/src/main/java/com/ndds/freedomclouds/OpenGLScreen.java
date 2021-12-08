@@ -63,8 +63,7 @@ public class OpenGLScreen extends GLSurfaceView {
         switch (e.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 this.autoRotate = false;
-                if(idleAnimator.isRunning())
-                    idleAnimator.cancel();
+                idleAnimator.end();
                 idleHandler.removeCallbacksAndMessages(null);
                 handler.removeCallbacksAndMessages(null);
                 setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
