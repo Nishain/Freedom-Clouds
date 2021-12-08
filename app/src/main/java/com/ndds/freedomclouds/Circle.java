@@ -26,7 +26,39 @@ public class Circle {
             0.5f,  0.5f, 0.0f }; // top right
 
     private int mProgram = 0;
+    public Circle(float depth,int program,float radius){
+        mProgram = program;
+        float[] pos=new float[(360 * 9)];
+        int j = 0;
+        for(int i=0;i<360;i+=1){
+            j =  9 * i;
+            pos[j] = 0.0f;
+            pos[j + 1] = 0.0f;
+            pos[j + 2] = depth;
 
+            pos[j + 3] = (float) (radius*Math.sin(i*Math.PI/180f));
+            pos[j + 4] = (float) (radius*Math.cos(i*Math.PI/180f));
+            pos[j + 5] = depth;
+
+            pos[j + 6] = (float) (radius*Math.sin((i+1)*Math.PI/180f));
+            pos[j + 7] = (float) (radius*Math.cos((i+1)*Math.PI/180f));
+            pos[j + 8] = depth;
+        }
+        squareCoords = pos;
+
+//        int[] textures = new int[1];
+//        GLES20.glGenTextures(1, textures, 0);
+//        GLES20.glBindTexture(GL10.GL_TEXTURE_2D, textures[0]);
+//        drawOrder = order;
+        // initialize vertex byte buffer for shape coordinates
+        ByteBuffer bb = ByteBuffer.allocateDirect(
+                // (# of coordinate values * 4 bytes per float)
+                squareCoords.length * 4);
+        bb.order(ByteOrder.nativeOrder());
+        vertexBuffer = bb.asFloatBuffer();
+        vertexBuffer.put(squareCoords);
+        vertexBuffer.position(0);
+    }
     public Circle(float depth, int program) {
         mProgram = program;
         float[] pos=new float[(360 * 9)];
@@ -108,6 +140,35 @@ public class Circle {
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
     private int vPMatrixHandle;
     float[] color = { 1.0f, 1.0f, 1.0f, 1.0f };
+    public void draw(float[] mvpMatrix) {
+        GLES20.glUseProgram(mProgram);
+
+        // get handle to vertex shader's vPosition member
+        positionHandle = GLES20.glGetAttribLocation(mProgram, "vPosition");
+
+        // Enable a handle to the triangle vertices
+        GLES20.glEnableVertexAttribArray(positionHandle);
+
+        // Prepare the triangle coordinate data
+        GLES20.glVertexAttribPointer(positionHandle, COORDS_PER_VERTEX,
+                GLES20.GL_FLOAT, false,
+                vertexStride, vertexBuffer);
+
+        // get handle to fragment shader's vColor member
+        int isTextureHandle  = GLES20.glGetUniformLocation(mProgram,"textured");
+        GLES20.glUniform1f(isTextureHandle,0.0f);
+        colorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
+
+
+        // Set color for drawing the triangle
+        GLES20.glUniform4fv(colorHandle, 1, color, 0);
+
+        // Draw the triangle
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, (360 * 6));
+
+        // Disable vertex array
+        GLES20.glDisableVertexAttribArray(positionHandle);
+    }
     public void draw(float[] mvpMatrix,int texture1,int texture2,float blendFactor) {
         // Add program to OpenGL ES environment
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);

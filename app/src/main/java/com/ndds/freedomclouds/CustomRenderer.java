@@ -17,10 +17,12 @@ class CustomRenderer implements GLSurfaceView.Renderer {
     public volatile float mAngle;
     Context context;
     private Circle mSquare2;
+    private Circle mSquare1Outline;
+    private Circle mSquare2Outline;
     private int program;
     private CircleOutline circleOutline;
     OpenGLScreen surfaceView;
-    private int program2;
+    private CircleOutline circleOutline2;
 
     public float getAngle() {
         return mAngle;
@@ -125,11 +127,15 @@ class CustomRenderer implements GLSurfaceView.Renderer {
         bindPicture(emblem1,2);
         bindPicture(emblem2,3);
         bindPicture(emblem3,4);
+        float outlineOffset = 0.0125f;
         program = GLES20.glCreateProgram();
         mSquare = new Circle(- 0.0625f,program);
         mSquare2 = new Circle( 0.0625f,program);
-        circleOutline = new CircleOutline(0.0625f,program);
-
+        circleOutline = new CircleOutline(0.0625f,program,.5f );
+        mSquare1Outline = new Circle(- 0.0625f - outlineOffset,program,.5f + outlineOffset);
+        mSquare2Outline = new Circle( 0.0625f + outlineOffset,program,.5f + outlineOffset);
+        circleOutline2 = new CircleOutline(0.0625f + outlineOffset,program,.5f + outlineOffset);
+        circleOutline2.color = new float[] {1.0f,1.0f,1.0f,1.0f};
 //        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
     }
@@ -137,6 +143,7 @@ class CustomRenderer implements GLSurfaceView.Renderer {
     private final float[] projectionMatrix = new float[16];
     private final float[] viewMatrix = new float[16];
     private float[] rotationMatrix = new float[16];
+    private float[] outlineTranslator = new float[16];
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         GLES20.glViewport(0, 0, width, height);
@@ -163,6 +170,7 @@ class CustomRenderer implements GLSurfaceView.Renderer {
 
         // Create a rotation transformation for the triangle
         Matrix.setIdentityM(rotationMatrix,0);
+        Matrix.setIdentityM(outlineTranslator,0);
         if(quickSpinAngle > 0){
             quickSpinAngle -= 10;
             mAngle+= 10;
@@ -217,7 +225,13 @@ class CustomRenderer implements GLSurfaceView.Renderer {
             mSquare.draw(scratch,textures[2 + Math.abs(n%3)],textures[2 + Math.abs((n+ 1)%3)],calculateTransitionFadeFactor(Math.abs(mAngle) % 360));
         circleOutline.draw(scratch);
         mSquare2.draw(scratch,textures[0],-99,0);
-
+        Matrix.translateM(outlineTranslator,0,0,0,0.5f);
+        Matrix.multiplyMM(scratch, 0, outlineTranslator, 0, scratch, 0);
+        //Matrix.multiplyMM(scratch, 0, outlineTranslator, 0, scratch, 0);
+        GLES20.glUniformMatrix4fv(vPMatrixHandle, 1, false, scratch, 0);
+        mSquare1Outline.draw(scratch);
+        circleOutline2.draw(scratch);
+        mSquare2Outline.draw(scratch);
 
     }
     private float calculateTransitionFadeFactor(float angle){

@@ -19,7 +19,7 @@ public class CircleOutline {
 
     private int mProgram = 0;
 
-    public CircleOutline(float depth,int program) {
+    public CircleOutline(float depth,int program,float radius) {
         mProgram = program;
         float[] pos=new float[(360 * 18)];
         int j = 0;
@@ -27,29 +27,29 @@ public class CircleOutline {
         for(int i=0;i<360;i+=1){
             j =  18 * i;
 
-            pos[j] = (float) (0.5*Math.sin(i*Math.PI/180f));
-            pos[j + 1] = (float) (0.5*Math.cos(i*Math.PI/180f));
+            pos[j] = (float) (radius*Math.sin(i*Math.PI/180f));
+            pos[j + 1] = (float) (radius*Math.cos(i*Math.PI/180f));
             pos[j + 2] = -depth;
 
-            pos[j + 3] = (float) (0.5*Math.sin(i*Math.PI/180f));
-            pos[j + 4] = (float) (0.5*Math.cos(i*Math.PI/180f));
+            pos[j + 3] = (float) (radius*Math.sin(i*Math.PI/180f));
+            pos[j + 4] = (float) (radius*Math.cos(i*Math.PI/180f));
             pos[j + 5] = depth;
 
-            pos[j + 6] = (float) (0.5*Math.sin((i+1)*Math.PI/180f));
-            pos[j + 7] = (float) (0.5*Math.cos((i+1)*Math.PI/180f));
+            pos[j + 6] = (float) (radius*Math.sin((i+1)*Math.PI/180f));
+            pos[j + 7] = (float) (radius*Math.cos((i+1)*Math.PI/180f));
             pos[j + 8] = depth;
 
 
-            pos[j + 9] = (float) (0.5*Math.sin(i*Math.PI/180f));
-            pos[j + 10] = (float) (0.5*Math.cos(i*Math.PI/180f));
+            pos[j + 9] = (float) (radius*Math.sin(i*Math.PI/180f));
+            pos[j + 10] = (float) (radius*Math.cos(i*Math.PI/180f));
             pos[j + 11] = -depth;
 
-            pos[j + 12] = (float) (0.5*Math.sin((i+1)*Math.PI/180f));
-            pos[j + 13] = (float) (0.5*Math.cos((i+1)*Math.PI/180f));
+            pos[j + 12] = (float) (radius*Math.sin((i+1)*Math.PI/180f));
+            pos[j + 13] = (float) (radius*Math.cos((i+1)*Math.PI/180f));
             pos[j + 14] = -depth;
 
-            pos[j + 15] = (float) (0.5*Math.sin((i+1)*Math.PI/180f));
-            pos[j + 16] = (float) (0.5*Math.cos((i + 1)*Math.PI/180f));
+            pos[j + 15] = (float) (radius*Math.sin((i+1)*Math.PI/180f));
+            pos[j + 16] = (float) (radius*Math.cos((i + 1)*Math.PI/180f));
             pos[j + 17] = depth;
 
         }
