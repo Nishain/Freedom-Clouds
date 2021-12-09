@@ -90,7 +90,7 @@ class CustomRenderer implements GLSurfaceView.Renderer {
 
         return shader;
     }
-    private int textures[] = new int[5];
+    private int textures[] = new int[6];
     private Bitmap flipImage(Bitmap bitmap){
         android.graphics.Matrix matrix = new android.graphics.Matrix();
         matrix.postRotate(180);
@@ -113,11 +113,12 @@ class CustomRenderer implements GLSurfaceView.Renderer {
     }
     public void loadTextures(){
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
-        GLES20.glGenTextures(5, textures, 0);
+        GLES20.glGenTextures(6, textures, 0);
 
         Bitmap emblem1 = getImage(R.drawable.emblem_plain);
         Bitmap emblem2 = getImage(R.drawable.emblem_plain2);
         Bitmap emblem3 = getImage(R.drawable.emblem_plain3);
+        Bitmap emblem4 = getImage(R.drawable.emblem_plain4);
         Bitmap emblemBack = getImage(R.drawable.emblem_back);
         Bitmap glow = getImage(R.drawable.emble_glowm);
 
@@ -126,6 +127,7 @@ class CustomRenderer implements GLSurfaceView.Renderer {
         bindPicture(emblem1,2);
         bindPicture(emblem2,3);
         bindPicture(emblem3,4);
+        bindPicture(emblem4,5);
         float outlineOffset = 0.0125f;
         program = GLES20.glCreateProgram();
         mSquare = new Circle(- 0.0625f,program);
@@ -149,7 +151,6 @@ class CustomRenderer implements GLSurfaceView.Renderer {
 //        });
         loadTextures();
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-        surfaceView.requestRender();
     }
     private final float[] vPMatrix = new float[16];
     private final float[] projectionMatrix = new float[16];
@@ -235,7 +236,7 @@ class CustomRenderer implements GLSurfaceView.Renderer {
         if(quickSpinAngle > 0 || doGlow!=0)
             mSquare.draw(scratch,textures[2],textures[1],blendFactor);
         else
-            mSquare.draw(scratch,textures[2 + Math.abs(n%3)],textures[2 + Math.abs((n+ 1)%3)],calculateTransitionFadeFactor(Math.abs(mAngle) % 360));
+            mSquare.draw(scratch,textures[2 + Math.abs(n%4)],textures[2 + Math.abs((n+ 1)%4)],calculateTransitionFadeFactor(Math.abs(mAngle) % 360));
         circleOutline.draw(scratch);
         mSquare2.draw(scratch,textures[0],-99,0);
         Matrix.translateM(outlineTranslator,0,0,0,0.5f);
