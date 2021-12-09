@@ -6,7 +6,10 @@
     android:layout_height="match_parent"
     android:background="@drawable/wood"
     android:orientation="vertical"
+    android:id="@+id/root"
     tools:context=".MainActivity">
+
+
 
     <com.ndds.freedomclouds.OpenGLScreen
         android:id="@+id/gl_screen"
@@ -20,6 +23,25 @@
         android:gravity="center"
         android:orientation="vertical">
 
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="end"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/imageView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:layout_marginTop="7dp"
+                android:layout_marginRight="12dp"
+                android:background="@drawable/transparent_black_round"
+                android:onClick="showCalender"
+                android:padding="7dp"
+                android:src="@drawable/calender" />
+        </TableRow>
+
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -30,38 +52,111 @@
             android:id="@+id/rotate_hint"
             android:layout_width="40dp"
             android:layout_height="50dp"
-            android:layout_marginTop="10dp"
             android:scaleType="fitCenter"
             android:tint="@android:color/white"
             app:srcCompat="@drawable/rotate" />
     </LinearLayout>
+
     <LinearLayout
+        android:id="@+id/interface_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:layout_marginBottom="50dp"
         android:gravity="center"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <ImageView
+            android:id="@+id/imageView3"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="right"
+            android:onClick="glow"
+            app:srcCompat="@drawable/star" />
 
         <TextView
-            android:id="@+id/textView2"
+            android:id="@+id/dayCount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:gravity="center"
-            android:text="Freed Days 1"
+            android:text="Days 0"
             android:textColor="@android:color/white"
-            android:textSize="18sp" />
+            android:textSize="20sp" />
 
-        <Button
-            android:id="@+id/button"
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="20dp"
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="30 Days progress"
+                android:textColor="@android:color/white" />
+
+            <ProgressBar
+                android:id="@+id/monthDaysProgress"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="4dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_weight="1"
+                android:max="30"
+                android:progress="25"
+                android:progressDrawable="@drawable/progress_style" />
+
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="Days completed in week"
+                android:textColor="@android:color/white" />
+
+            <ProgressBar
+                android:id="@+id/weekDaysProgress"
+                style="?android:attr/progressBarStyleHorizontal"
+
+                android:layout_width="match_parent"
+                android:layout_height="4dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_weight="1"
+                android:max="7"
+                android:progress="0"
+                android:progressDrawable="@drawable/progress_style" />
+        </TableRow>
+
+
+        <TextView
+            android:id="@+id/weeksCompletedCount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="@drawable/white_outline"
-            android:onClick="glow"
-            android:text="Glow"
-            android:textColor="#FFFFFF" />
+            android:layout_marginBottom="20dp"
+            android:text="Weeks completed 0"
+            android:textColor="@android:color/white" />
+
+
     </LinearLayout>
 
+    <FrameLayout
+        android:id="@+id/splash_overlay"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <include layout="@layout/activity_splash__screen"/>
+    </FrameLayout>
 </FrameLayout>

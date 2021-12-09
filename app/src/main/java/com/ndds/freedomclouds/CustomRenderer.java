@@ -111,8 +111,7 @@ class CustomRenderer implements GLSurfaceView.Renderer {
 
         GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, picture, 0);
     }
-    @Override
-    public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+    public void loadTextures(){
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         GLES20.glGenTextures(5, textures, 0);
 
@@ -137,7 +136,20 @@ class CustomRenderer implements GLSurfaceView.Renderer {
         circleOutline2 = new CircleOutline(0.0625f + outlineOffset,program,.5f + outlineOffset);
         circleOutline2.color = new float[] {1.0f,1.0f,1.0f,1.0f};
 //        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+
+    }
+    @Override
+    public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+//        surfaceView.activity.runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+//                Toast.makeText(context, "surface created", Toast.LENGTH_SHORT).show();
+//            }
+//        });
+        loadTextures();
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        surfaceView.requestRender();
     }
     private final float[] vPMatrix = new float[16];
     private final float[] projectionMatrix = new float[16];
@@ -146,6 +158,7 @@ class CustomRenderer implements GLSurfaceView.Renderer {
     private float[] outlineTranslator = new float[16];
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
+        Log.d("debiug","surface created");
         GLES20.glViewport(0, 0, width, height);
         float ratio = (float) width / height;
 

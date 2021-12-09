@@ -21,6 +21,7 @@ import java.nio.ShortBuffer;
 
 public class OpenGLScreen extends GLSurfaceView {
     CustomRenderer customRenderer = null;
+    public MainActivity activity;
     public OpenGLScreen(Context context, AttributeSet attrs) {
 
         super(context,attrs);
@@ -30,10 +31,11 @@ public class OpenGLScreen extends GLSurfaceView {
         customRenderer = new CustomRenderer(context,this);
         setEGLConfigChooser(true);
         setEGLConfigChooser( 8, 8, 8, 8, 16, 0 );
-        setRenderer(customRenderer);
 
+        setRenderer(customRenderer);
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
     }
+
     public boolean autoRotate = false;
     private final float TOUCH_SCALE_FACTOR = 180.0f / 320;
     private float previousX;
