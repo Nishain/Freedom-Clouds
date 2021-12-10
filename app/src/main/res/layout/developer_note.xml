@@ -20,6 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="15dp"
+        android:textColor="@android:color/black"
         android:text="@string/developer_note" />
 
     <TextView
@@ -28,7 +29,9 @@
         android:layout_height="wrap_content"
         android:layout_marginRight="20dp"
         android:gravity="right"
+
         android:text="from developer"
+        android:textSize="17sp"
         android:textStyle="bold|italic" />
 
     <Button

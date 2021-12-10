@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-public class CircleOutline {
+public class Cylinder {
     private FloatBuffer vertexBuffer;
     private FloatBuffer textureBuffer;
     // number of coordinates per vertex in this array
@@ -19,9 +19,10 @@ public class CircleOutline {
 
     private int mProgram = 0;
 
-    public CircleOutline(float depth,int program,float radius) {
+    public Cylinder(float depth, int program, float radius) {
         mProgram = program;
         float[] pos=new float[(360 * 18)];
+
         int j = 0;
         //pos = new float[]{-0.5f, 0.0f,0.0f,0.5f, 0.0f,0.0f,0.0f, 0.5f,0.0f};
         for(int i=0;i<360;i+=1){
@@ -64,21 +65,6 @@ public class CircleOutline {
         vertexBuffer = bb.asFloatBuffer();
         vertexBuffer.put(squareCoords);
         vertexBuffer.position(0);
-
-        // initialize byte buffer for the draw list
-//        ByteBuffer dlb = ByteBuffer.allocateDirect(
-//                // (# of coordinate values * 2 bytes per short)
-//                drawOrder.length * 2);
-//        dlb.order(ByteOrder.nativeOrder());
-//        drawListBuffer = dlb.asShortBuffer();
-//        drawListBuffer.put(drawOrder);
-//        drawListBuffer.position(0);
-//        bb = ByteBuffer.allocateDirect(textureCood.length * 4);
-//        bb.order(ByteOrder.nativeOrder());
-//        textureBuffer = bb.asFloatBuffer();
-//        textureBuffer.put(textureCood);
-//        textureBuffer.position(0);
-
 
         int vertexShader = CustomRenderer.loadShader(GLES20.GL_VERTEX_SHADER,
                 CustomRenderer.vertexShaderCode);
@@ -135,4 +121,5 @@ public class CircleOutline {
         GLES20.glDisableVertexAttribArray(positionHandle);
 
     }
+
 }

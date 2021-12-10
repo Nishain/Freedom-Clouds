@@ -25,17 +25,17 @@ public class OpenGLScreen extends GLSurfaceView {
     public OpenGLScreen(Context context, AttributeSet attrs) {
 
         super(context,attrs);
-
         setEGLContextClientVersion(2);
 
-        customRenderer = new CustomRenderer(context,this);
+    }
+    public void initRenderer(Context context){
+        customRenderer = getTag().equals("2") ? new GiftRenderer(context,this) : new CustomRenderer(context,this);
         setEGLConfigChooser(true);
         setEGLConfigChooser( 8, 8, 8, 8, 16, 0 );
 
         setRenderer(customRenderer);
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
     }
-
     public boolean autoRotate = false;
     private final float TOUCH_SCALE_FACTOR = 180.0f / 320;
     private float previousX;
@@ -43,6 +43,8 @@ public class OpenGLScreen extends GLSurfaceView {
     public boolean quickSpinEnabled = false;
     private Handler handler = new Handler();
     public void glow(){
+        if(getTag().equals("2"))
+            return;
         customRenderer.blendFactor = 0.0f;
         customRenderer.doGlow = 1;
         setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
@@ -60,7 +62,7 @@ public class OpenGLScreen extends GLSurfaceView {
     @Override
     public boolean onTouchEvent(MotionEvent e) {
         float x = e.getX();
-        float y = e.getY();
+//        float y = e.getY();
 
         switch (e.getAction()) {
             case MotionEvent.ACTION_DOWN:
@@ -93,25 +95,30 @@ public class OpenGLScreen extends GLSurfaceView {
             case MotionEvent.ACTION_MOVE:
 
                 float dx = x - previousX;
-                float dy = y - previousY;
-
+//                float dy = y - previousY;
+                float factor = 1.0f;
                 // reverse direction of rotation above the mid-line
-                if (y > getHeight() / 2) {
-                    dx = dx * -1 ;
-                }
-
+//                if (y > getHeight() / 2) {
+//                    dx = dx * -1 ;
+//                }
+//                if(Math.abs(dx) < 10)
+//                    return true;
                 // reverse direction of rotation to left of the mid-line
                 if (x < getWidth() / 2) {
-                    dy = dy * -1 ;
+                    factor = -1.0f;
+                    //dy = dy * -1 ;
                 }
                 customRenderer.setAngle(
                         customRenderer.getAngle() +
-                                ((dx + dy) * TOUCH_SCALE_FACTOR));
+                                ((dx + factor) * TOUCH_SCALE_FACTOR));
+//                customRenderer.setAngle(
+//                        customRenderer.getAngle() +
+//                                ((dx + dy) * TOUCH_SCALE_FACTOR));
                 requestRender();
         }
 
         previousX = x;
-        previousY = y;
+//        previousY = y;
         return true;
 
     }

@@ -7,8 +7,6 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
-import android.util.Log;
-import android.widget.Toast;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -16,13 +14,13 @@ import javax.microedition.khronos.opengles.GL10;
 class CustomRenderer implements GLSurfaceView.Renderer {
     public volatile float mAngle;
     Context context;
-    private Circle mSquare2;
-    private Circle mSquare1Outline;
-    private Circle mSquare2Outline;
+    private Circle textureCircle2;
+    private Circle outlineCircle1;
+    private Circle outlineCircle2;
     private int program;
-    private CircleOutline circleOutline;
+    private Cylinder cylinder;
     OpenGLScreen surfaceView;
-    private CircleOutline circleOutline2;
+    private Cylinder cylinder2;
 
     public float getAngle() {
         return mAngle;
@@ -76,7 +74,7 @@ class CustomRenderer implements GLSurfaceView.Renderer {
                     "  gl_FragColor = vColor;" +
                     "}";
 
-    private Circle mSquare;
+    private Circle textureCircle1;
 
     public static int loadShader(int type, String shaderCode){
 
@@ -90,19 +88,19 @@ class CustomRenderer implements GLSurfaceView.Renderer {
 
         return shader;
     }
-    private int textures[] = new int[6];
+    private int textures[] = new int[7];
     private Bitmap flipImage(Bitmap bitmap){
         android.graphics.Matrix matrix = new android.graphics.Matrix();
         matrix.postRotate(180);
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
     }
-    private Bitmap getImage(int resourceCode){
+    Bitmap getImage(int resourceCode){
         Bitmap photo = BitmapFactory.decodeResource(context.getResources(),resourceCode);
         photo = flipImage(photo);
         return photo;
     }
 
-    private void bindPicture(Bitmap picture,int index){
+    private void bindPicture(Bitmap picture, int index){
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[index]);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
@@ -111,7 +109,7 @@ class CustomRenderer implements GLSurfaceView.Renderer {
 
         GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, picture, 0);
     }
-    public void loadTextures(){
+    private void loadTextures(){
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         GLES20.glGenTextures(6, textures, 0);
 
@@ -119,6 +117,7 @@ class CustomRenderer implements GLSurfaceView.Renderer {
         Bitmap emblem2 = getImage(R.drawable.emblem_plain2);
         Bitmap emblem3 = getImage(R.drawable.emblem_plain3);
         Bitmap emblem4 = getImage(R.drawable.emblem_plain4);
+        Bitmap emblem5 = getImage(R.drawable.emblem_plain5);
         Bitmap emblemBack = getImage(R.drawable.emblem_back);
         Bitmap glow = getImage(R.drawable.emble_glowm);
 
@@ -128,29 +127,26 @@ class CustomRenderer implements GLSurfaceView.Renderer {
         bindPicture(emblem2,3);
         bindPicture(emblem3,4);
         bindPicture(emblem4,5);
+        bindPicture(emblem5,6);
         float outlineOffset = 0.0125f;
         program = GLES20.glCreateProgram();
-        mSquare = new Circle(- 0.0625f,program);
-        mSquare2 = new Circle( 0.0625f,program);
-        circleOutline = new CircleOutline(0.0625f,program,.5f );
-        mSquare1Outline = new Circle(- 0.0625f - outlineOffset,program,.5f + outlineOffset);
-        mSquare2Outline = new Circle( 0.0625f + outlineOffset,program,.5f + outlineOffset);
-        circleOutline2 = new CircleOutline(0.0625f + outlineOffset,program,.5f + outlineOffset);
-        circleOutline2.color = new float[] {1.0f,1.0f,1.0f,1.0f};
+        textureCircle1 = new Circle(- 0.0625f,program);
+        textureCircle2 = new Circle( 0.0625f,program);
+        cylinder = new Cylinder(0.0625f,program,.5f );
+        outlineCircle1 = new Circle(- 0.0625f - outlineOffset,program,.5f + outlineOffset);
+        outlineCircle2 = new Circle( 0.0625f + outlineOffset,program,.5f + outlineOffset);
+        cylinder2 = new Cylinder(0.0625f + outlineOffset,program,.5f + outlineOffset);
+        cylinder2.color = new float[] {1.0f,1.0f,1.0f,1.0f};
 //        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
 
     }
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-//        surfaceView.activity.runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                Toast.makeText(context, "surface created", Toast.LENGTH_SHORT).show();
-//            }
-//        });
         loadTextures();
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        surfaceView.requestRender();
+        surfaceView.activity.hideEmblemLoader();
     }
     private final float[] vPMatrix = new float[16];
     private final float[] projectionMatrix = new float[16];
@@ -159,7 +155,6 @@ class CustomRenderer implements GLSurfaceView.Renderer {
     private float[] outlineTranslator = new float[16];
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
-        Log.d("debiug","surface created");
         GLES20.glViewport(0, 0, width, height);
         float ratio = (float) width / height;
 
@@ -170,10 +165,8 @@ class CustomRenderer implements GLSurfaceView.Renderer {
     float blendFactor = 0.0f;
     int doGlow = 0;
     float quickSpinAngle = 0;
-    boolean doQuickSpining = false;
     @Override
     public void onDrawFrame(GL10 gl) {
-//        GLES10.glClearDepth(1.0);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
         Matrix.setLookAtM(viewMatrix, 0, 0, 0, -4f, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
 
@@ -196,11 +189,9 @@ class CustomRenderer implements GLSurfaceView.Renderer {
             if((doGlow == 1 && blendFactor < 1.0f) || (doGlow==-1 && blendFactor > 0.0f))
                     blendFactor += (doGlow * 0.05f);
             else{
-//                if(doGlow == -1)
-//                    Log.d("info",)
+
                 quickSpinAngle = (360 * 3) - (mAngle % 360);
                 quickSpinAngle *= doGlow;
-//                blendFactor = 0.0f;
 
                 doGlow = 0;
                 if((quickSpinAngle < 0) && !surfaceView.autoRotate){
@@ -210,13 +201,13 @@ class CustomRenderer implements GLSurfaceView.Renderer {
             }
         }
         if(surfaceView.autoRotate && quickSpinAngle < 1){
-                if ((Math.abs(mAngle) % (360 * 3)) > 5) {
+                if ((Math.abs(mAngle) % (360 * 5)) > 10) {
                     if (mAngle > 0)
-                        mAngle -= 5;
+                        mAngle -= 10;
                     else
-                        mAngle += 5;
+                        mAngle += 10;
                 } else {
-                    mAngle = mAngle - (Math.abs(mAngle) % (360 * 3));
+                    mAngle = mAngle - (Math.abs(mAngle) % (360 * 5));
                     surfaceView.autoRotate = false;
                     surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
                     surfaceView.requestRender();
@@ -234,18 +225,18 @@ class CustomRenderer implements GLSurfaceView.Renderer {
         GLES20.glUniformMatrix4fv(vPMatrixHandle, 1, false, scratch, 0);
         int n = Math.abs((int) (mAngle/360));
         if(quickSpinAngle > 0 || doGlow!=0)
-            mSquare.draw(scratch,textures[2],textures[1],blendFactor);
+            textureCircle1.draw(scratch,textures[2 + Math.abs(n%5)],textures[1],blendFactor);
         else
-            mSquare.draw(scratch,textures[2 + Math.abs(n%4)],textures[2 + Math.abs((n+ 1)%4)],calculateTransitionFadeFactor(Math.abs(mAngle) % 360));
-        circleOutline.draw(scratch);
-        mSquare2.draw(scratch,textures[0],-99,0);
+            textureCircle1.draw(scratch,textures[2 + Math.abs(n%5)],textures[2 + Math.abs((n+ 1)%5)],calculateTransitionFadeFactor(Math.abs(mAngle) % 360));
+        cylinder.draw(scratch);
+        textureCircle2.draw(scratch,textures[0],-99,0);
         Matrix.translateM(outlineTranslator,0,0,0,0.5f);
         Matrix.multiplyMM(scratch, 0, outlineTranslator, 0, scratch, 0);
         //Matrix.multiplyMM(scratch, 0, outlineTranslator, 0, scratch, 0);
         GLES20.glUniformMatrix4fv(vPMatrixHandle, 1, false, scratch, 0);
-        mSquare1Outline.draw(scratch);
-        circleOutline2.draw(scratch);
-        mSquare2Outline.draw(scratch);
+        outlineCircle1.draw(scratch);
+        cylinder2.draw(scratch);
+        outlineCircle2.draw(scratch);
 
     }
     private float calculateTransitionFadeFactor(float angle){

@@ -10,8 +10,29 @@
     tools:context=".MainActivity">
 
 
+    <LinearLayout
+        android:id="@+id/emblem_loading_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@drawable/white_round_border"
+        android:orientation="vertical"
+        android:padding="10dp"
+        android:visibility="visible">
 
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
+        <TextView
+            android:id="@+id/textView7"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Unwrapping Present"
+            android:textColor="@android:color/black" />
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -112,6 +133,14 @@
             android:paddingLeft="10dp"
             android:paddingRight="10dp">
 
+            <TextView
+                android:id="@+id/startDateTxt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Since"
+                android:textColor="@android:color/black" />
+
             <TableRow
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -169,13 +198,6 @@
 
             </TableRow>
 
-            <TextView
-                android:id="@+id/weeksCompletedCount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
-                android:text="Weeks completed 0"
-                android:textColor="@android:color/black" />
         </LinearLayout>
 
 

@@ -8,9 +8,11 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.SharedPreferences;
+import android.graphics.ColorFilter;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -32,8 +34,13 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
     SharedPreferences sharedPreferences;
     private AlertDialog settingsAlert;
 
-    private void initOpenGL(){
+    private void initOpenGL(int tag){
+        ViewGroup view = (ViewGroup)getLayoutInflater().inflate(R.layout.opengl_layout, null);
+
+        (view.getChildAt(0)).setTag(String.valueOf(tag));
+        ((ViewGroup)findViewById(R.id.root)).addView(view, 0);
         openGLScreen = findViewById(R.id.gl_screen);
+        openGLScreen.initRenderer(this);
         openGLScreen.activity = MainActivity.this;
         openGLScreen.setIdleHandler(idleHandler,rotateHintAnimator);
         openGLScreen.getHolder().setFormat(PixelFormat.TRANSPARENT);
@@ -46,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
         overridePendingTransition(0,0);
         setContentView(R.layout.activity_main);
+        findViewById(R.id.emblem_loading_indicator).setVisibility(View.GONE);
         sharedPreferences = getSharedPreferences("configuration",MODE_PRIVATE);
         if(sharedPreferences.contains(START_TIME)){
             String[] dateComponents = sharedPreferences.getString(START_TIME,"").split("/");
@@ -67,11 +75,12 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
             @Override
             public void onAnimationEnd(Animation animation) {
                 splashOverlay.setVisibility(View.GONE);
-                ((ViewGroup)findViewById(R.id.root)).addView(getLayoutInflater().inflate(R.layout.opengl_layout,null),
-                        0);
-                initOpenGL();
-                if(!sharedPreferences.contains(START_TIME))
+
+                if(!sharedPreferences.contains(START_TIME)) {
+                    initOpenGL(2);
                     showInstruction();
+                }else
+                    initOpenGL(1);
             }
 
             @Override
@@ -125,12 +134,16 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         settedCalender.set(year,month,dayOfMonth);
         Calendar currentCalender = Calendar.getInstance();
         int days = (int) ((currentCalender.getTime().getTime() - settedCalender.getTime().getTime()) / (1000 * 60 * 60 * 24));
+        if(days < 0){
+            Toast.makeText(this, "Can only enter a date on or before today's date", Toast.LENGTH_LONG).show();
+            return;
+        }
         ((ProgressBar) findViewById(R.id.weekDaysProgress)).setProgress(days % 7);
         ProgressBar daysInMonthProgress = findViewById(R.id.monthDaysProgress);
         daysInMonthProgress.setProgress(days % 30);
         //weeksCompletedCount
-        ((TextView)findViewById(R.id.dayCount)).setText(String.format("%d Days", days));
-        ((TextView)findViewById(R.id.weeksCompletedCount)).setText(String.format("weeks Completed  %d", days / 7));
+        ((TextView)findViewById(R.id.dayCount)).setText(String.format("%d Days Week %d", days,days / 7));
+        ((TextView)findViewById(R.id.startDateTxt)).setText(String.format("Since %d/%d/%d",dayOfMonth,month+1,year));
         ((TextView)findViewById(R.id.remaining_7_days_txt)).setText(String.format("%s %s",getString(R.string.days_completed_in_week), days % 7+"/7"));
         ((TextView)findViewById(R.id.remaining_30_days_txt)).setText(String.format("%s %s",getString(R.string._30_days_progress), days % 30+"/30"));
         startTime = settedCalender.getTime().getTime();
@@ -139,7 +152,8 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
     }
     @Override
     public void onClick(View v) {
-        settingsAlert.dismiss();
+        if(v.getId() != R.id.reset_memory)
+            settingsAlert.dismiss();
         switch (v.getId()){
             case R.id.settings_change_date:
                 Calendar calendar = Calendar.getInstance();
@@ -157,9 +171,35 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                 noteAlert.show();
                 break;
             case  R.id.reset_memory:
-                sharedPreferences.edit().remove(START_TIME).apply();
-                Toast.makeText(this, "will be effected on next launch", Toast.LENGTH_SHORT).show();
+                if(((Button)v).getText().toString().contains("Are you sure ?")){
+                    settingsAlert.dismiss();
+                    sharedPreferences.edit().remove(START_TIME).apply();
+                    Toast.makeText(this, "will be effect on next app launch", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                v.setBackgroundResource(R.drawable.round_beauty_orange);
+                ((Button)v).setText("Are you sure ? (yes)");
         }
+    }
+    public void unwrapGift(){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                findViewById(R.id.emblem_loading_indicator).setVisibility(View.VISIBLE);
+                ((ViewGroup)findViewById(R.id.root)).removeViewAt(0);
+
+                initOpenGL(1);
+            }
+        });
+
+    }
+    public void hideEmblemLoader(){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                findViewById(R.id.emblem_loading_indicator).setVisibility(View.GONE);
+            }
+        });
     }
     private void showInstruction(){
         ViewGroup viewGroup = (ViewGroup) getLayoutInflater().inflate(R.layout.introduction,null);
