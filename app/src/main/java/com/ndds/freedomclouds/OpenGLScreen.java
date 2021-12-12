@@ -2,22 +2,14 @@ package com.ndds.freedomclouds;
 
 import android.animation.ObjectAnimator;
 import android.content.Context;
-import android.graphics.PixelFormat;
+import android.graphics.Bitmap;
 import android.opengl.GLSurfaceView;
 
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
-import android.opengl.GLES20;
-import android.opengl.Matrix;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
+import java.util.ArrayList;
 
 public class OpenGLScreen extends GLSurfaceView {
     CustomRenderer customRenderer = null;
@@ -28,8 +20,10 @@ public class OpenGLScreen extends GLSurfaceView {
         setEGLContextClientVersion(2);
 
     }
-    public void initRenderer(Context context){
-        customRenderer = getTag().equals("2") ? new GiftRenderer(context,this) : new CustomRenderer(context,this);
+    @SuppressWarnings("unchecked")
+    public void initRenderer(Context context, Object ... rendererParams){
+        boolean isGiftRenderer = getTag().equals("2");
+        customRenderer = isGiftRenderer ? new GiftRenderer(context,this) : new CustomRenderer(context,this,(ArrayList<Bitmap>) rendererParams[0], (String[]) rendererParams[1]);
         setEGLConfigChooser(true);
         setEGLConfigChooser( 8, 8, 8, 8, 16, 0 );
 

@@ -1,0 +1,1 @@
+Wood,Leaf,Flower,Water,Rock,Fantam,Fire

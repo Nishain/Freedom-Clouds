@@ -8,8 +8,15 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.SharedPreferences;
+import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.ColorFilter;
 import android.graphics.PixelFormat;
+import android.graphics.Typeface;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -23,7 +30,14 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements DatePickerDialog.OnDateSetListener, View.OnClickListener {
 
@@ -33,19 +47,67 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
     private long startTime = 0;
     SharedPreferences sharedPreferences;
     private AlertDialog settingsAlert;
+    private SoundPool soundPool;
 
     private void initOpenGL(int tag){
         ViewGroup view = (ViewGroup)getLayoutInflater().inflate(R.layout.opengl_layout, null);
 
         (view.getChildAt(0)).setTag(String.valueOf(tag));
         ((ViewGroup)findViewById(R.id.root)).addView(view, 0);
+        ArrayList<Bitmap> bitmaps = null;
         openGLScreen = findViewById(R.id.gl_screen);
-        openGLScreen.initRenderer(this);
+        if(String.valueOf(tag).equals("1")) {
+            bitmaps = new ArrayList<>();
+            AssetManager assetManager = getResources().getAssets();
+
+            String[] emblemTypes = null;
+
+            try {
+                    String[] fileList = assetManager.list("borderless");
+                for (String file : Objects.requireNonNull(fileList)) {
+                    if(file.equals("names.txt"))
+                        emblemTypes = new BufferedReader(new InputStreamReader(assetManager.open("borderless/"+file))).readLine().split(",");
+                    else
+                        bitmaps.add(BitmapFactory.decodeStream(assetManager.open("borderless/"+file)));
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            openGLScreen.initRenderer(this,bitmaps,emblemTypes);
+        }else
+            openGLScreen.initRenderer(this);
         openGLScreen.activity = MainActivity.this;
         openGLScreen.setIdleHandler(idleHandler,rotateHintAnimator);
         openGLScreen.getHolder().setFormat(PixelFormat.TRANSPARENT);
         openGLScreen.setZOrderOnTop(true);
     }
+    private void initSoundPool(){
+        AudioAttributes attributes = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            attributes = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_GAME)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build();
+            soundPool = new SoundPool.Builder()
+                    .setAudioAttributes(attributes)
+                    .setMaxStreams(1)
+                    .build();
+        }else {
+            soundPool = new SoundPool(1,AudioManager.STREAM_MUSIC,0);
+        }
+    }
+    public void playSound(int id){
+        int soundId = soundPool.load(this,id, 1);
+        soundPool.setOnLoadCompleteListener((soundPool, sampleId, status) -> soundPool.play(soundId, 1, 1, 1, 0, 1));
+    }
+
+    @Override
+    public void finish() {
+        soundPool.release();
+        super.finish();
+    }
+
     private static final String START_TIME = "startTime";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +115,8 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
         overridePendingTransition(0,0);
         setContentView(R.layout.activity_main);
+        ((TextView)findViewById(R.id.emblemType)).setTypeface(Typeface.createFromAsset(getAssets(),"fonts/bananaFont.ttf"));
+        initSoundPool();
         findViewById(R.id.emblem_loading_indicator).setVisibility(View.GONE);
         sharedPreferences = getSharedPreferences("configuration",MODE_PRIVATE);
         if(sharedPreferences.contains(START_TIME)){
@@ -112,6 +176,14 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
     public void glow(View v){
         openGLScreen.glow();
     }
+    public void setEmblemTypeText(String text){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((TextView)findViewById(R.id.emblemType)).setText(text+" Emblem");
+            }
+        });
+    }
     public void showSettings(View v){
         ViewGroup settingsView = (ViewGroup)getLayoutInflater().inflate(R.layout.settings,null);
 
@@ -169,6 +241,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                 AlertDialog noteAlert = new AlertDialog.Builder(this).setView(viewGroup).create();
                 viewGroup.findViewById(R.id.developer_note_ok).setOnClickListener(v1 -> noteAlert.dismiss());
                 noteAlert.show();
+                playSound(R.raw.paper_flip);
                 break;
             case  R.id.reset_memory:
                 if(((Button)v).getText().toString().contains("Are you sure ?")){
@@ -212,8 +285,8 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                 showCalender();
             }
         });
-
         alertDialog.show();
+        playSound(R.raw.paper_flip);
     }
 
 }
