@@ -141,6 +141,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                 splashOverlay.setVisibility(View.GONE);
 
                 if(!sharedPreferences.contains(START_TIME)) {
+                    ((TextView) findViewById(R.id.emblemType)).setText("The Gift");
                     initOpenGL(2);
                     showInstruction();
                 }else
@@ -153,11 +154,6 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
             }
         });
         findViewById(R.id.splash_overlay).startAnimation(slideUpAnimation);
-
-//        View dashboard = getLayoutInflater().inflate(R.layout.dashboard,null);
-//
-//        ((ViewGroup)findViewById(R.id.root)).addView(dashboard, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM));
-//        findViewById(R.id.interface_container).setZ();
         View v = findViewById(R.id.rotate_hint);
         rotateHintAnimator = ObjectAnimator.ofFloat(v, "alpha", 0, 1);
         rotateHintAnimator.setRepeatMode(ValueAnimator.REVERSE);

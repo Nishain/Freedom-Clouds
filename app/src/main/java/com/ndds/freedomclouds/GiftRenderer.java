@@ -30,7 +30,7 @@ class GiftRenderer extends CustomRenderer implements GLSurfaceView.Renderer{
         this.context = context;
     }
 
-    public void setAngle(float angle) {
+    public void setAngleX(float angle) {
         mAngle = angle;
     }
 

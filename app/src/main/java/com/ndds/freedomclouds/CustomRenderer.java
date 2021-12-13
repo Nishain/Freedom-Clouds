@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLUtils;
@@ -17,7 +16,8 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 class CustomRenderer implements GLSurfaceView.Renderer {
-    public volatile float mAngle;
+    public volatile float mAngleX;
+    public volatile float mAngleY;
     Context context;
     private Circle textureCircle2;
     private Circle outlineCircle1;
@@ -30,8 +30,11 @@ class CustomRenderer implements GLSurfaceView.Renderer {
     int emblemCount;
     private String[] emblemTypes;
 
-    public float getAngle() {
-        return mAngle;
+    public float getAngleX() {
+        return mAngleX;
+    }
+    public float getAngleY() {
+        return mAngleY;
     }
     CustomRenderer(Context context, OpenGLScreen surfaceView, ArrayList<Bitmap> bitmaps, String[] emblemTypes){
         this.emblemTypes = emblemTypes;
@@ -47,8 +50,11 @@ class CustomRenderer implements GLSurfaceView.Renderer {
         this.surfaceView = surfaceView;
         this.context = context;
     }
-    public void setAngle(float angle) {
-        mAngle = angle;
+    public void setAngleX(float angleX) {
+        mAngleX = angleX;
+    }
+    public void setAngleY(float angleY) {
+        mAngleY = angleY;
     }
     public static final String vertexShaderCode =
             // This matrix member variable provides a hook to manipulate
@@ -129,13 +135,14 @@ class CustomRenderer implements GLSurfaceView.Renderer {
 
         GLES20.glGenTextures(textures.length, textures, 0);
 
+        Bitmap background = BitmapFactory.decodeResource(surfaceView.activity.getResources(),R.drawable.emblem_background);
+        Paint paint = new Paint();
         Bitmap emblemBack = getImage(R.drawable.emblem_back);
-        Bitmap glow = getImage(R.drawable.emble_glowm);
+        Bitmap glow = wrapInsideBackground(getImage(R.drawable.emble_glowm),background,paint);
 
         bindPicture(emblemBack,0);
         bindPicture(glow,1);
-        Bitmap background = BitmapFactory.decodeResource(surfaceView.activity.getResources(),R.drawable.emblem_background);
-        Paint paint = new Paint();
+
         for (int i = 0; i < emblemImages.length; i++) {
             bindPicture(flipImage(wrapInsideBackground(emblemImages[i],background,paint)),i+2);
         }
@@ -164,6 +171,7 @@ class CustomRenderer implements GLSurfaceView.Renderer {
     private final float[] projectionMatrix = new float[16];
     private final float[] viewMatrix = new float[16];
     private float[] rotationMatrix = new float[16];
+    private float[] rotationMatrixY = new float[16];
     private float[] outlineTranslator = new float[16];
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
@@ -190,10 +198,11 @@ class CustomRenderer implements GLSurfaceView.Renderer {
 
         // Create a rotation transformation for the triangle
         Matrix.setIdentityM(rotationMatrix,0);
+        Matrix.setIdentityM(rotationMatrixY,0);
         Matrix.setIdentityM(outlineTranslator,0);
         if(quickSpinAngle > 0){
             quickSpinAngle -= 10;
-            mAngle+= 10;
+            mAngleX += 10;
             if(quickSpinAngle <= 0){
                 doGlow = -1;
             }
@@ -202,8 +211,8 @@ class CustomRenderer implements GLSurfaceView.Renderer {
             if((doGlow == 1 && blendFactor < 1.0f) || (doGlow==-1 && blendFactor > 0.0f))
                     blendFactor += (doGlow * 0.05f);
             else{
-
-                quickSpinAngle = (360 * 3) - (mAngle % 360);
+                mAngleY = 0;
+                quickSpinAngle = (360 * 3) - (mAngleX % 360);
                 quickSpinAngle *= doGlow;
 
                 doGlow = 0;
@@ -214,30 +223,41 @@ class CustomRenderer implements GLSurfaceView.Renderer {
             }
         }
         if(surfaceView.autoRotate && quickSpinAngle < 1){
-                if ((Math.abs(mAngle) % (360 * emblemCount)) > 10) {
-                    if (mAngle > 0)
-                        mAngle -= 10;
-                    else
-                        mAngle += 10;
+                boolean shouldRotateX = (Math.abs(mAngleX) % 360) > 10;
+                boolean shouldRotateY = Math.abs(mAngleY) > 10;
+                if (shouldRotateX || shouldRotateY) {
+                    if(shouldRotateX) {
+                        if (mAngleX > 0)
+                            mAngleX -= 10;
+                        else
+                            mAngleX += 10;
+                    }
+                    if(shouldRotateY){
+                        if (mAngleY > 0)
+                            mAngleY -= 10;
+                        else
+                            mAngleY += 10;
+                    }
                 } else {
-                    mAngle = mAngle - (Math.abs(mAngle) % (360 * emblemCount));
+                    mAngleX = mAngleX - (mAngleX % 360);
+                    mAngleY = 0;
                     surfaceView.autoRotate = false;
                     surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
                     surfaceView.requestRender();
                 }
-
         }
-        Matrix.rotateM(rotationMatrix, 0, mAngle, 0,  1.0f, 0);
-
+        Matrix.rotateM(rotationMatrix, 0, mAngleX, 0,  1.0f, 0);
+        Matrix.rotateM(rotationMatrixY, 0, mAngleY, 1.0f,  0, 0);
         // Combine the rotation matrix with the projection and camera view
         // Note that the vPMatrix factor *must be first* in order
         // for the matrix multiplication product to be correct.
         Matrix.multiplyMM(scratch, 0, vPMatrix, 0, rotationMatrix, 0);
+        Matrix.multiplyMM(scratch, 0, scratch, 0, rotationMatrixY, 0);
         int vPMatrixHandle = GLES20.glGetUniformLocation(program, "uMVPMatrix");
         // Pass the projection and view transformation to the shader
         GLES20.glUniformMatrix4fv(vPMatrixHandle, 1, false, scratch, 0);
-        int n = Math.abs((int) (mAngle/360));
-        int k = (int) ((Math.abs(mAngle) + 90)/360);
+        int n = Math.abs((int) (mAngleX /360));
+        int k = (int) ((Math.abs(mAngleX) + 90)/360);
         if(currentN != k%emblemCount) {
             surfaceView.activity.setEmblemTypeText(emblemTypes[k%emblemCount]);
             currentN = k%emblemCount;
@@ -245,7 +265,7 @@ class CustomRenderer implements GLSurfaceView.Renderer {
         if(quickSpinAngle > 0 || doGlow!=0)
             textureCircle1.draw(scratch,textures[2 + Math.abs(n%emblemCount)],textures[1],blendFactor);
         else
-            textureCircle1.draw(scratch,textures[2 + Math.abs(n%emblemCount)],textures[2 + Math.abs((n+ 1)%emblemCount)],calculateTransitionFadeFactor(Math.abs(mAngle) % 360));
+            textureCircle1.draw(scratch,textures[2 + Math.abs(n%emblemCount)],textures[2 + Math.abs((n+ 1)%emblemCount)],calculateTransitionFadeFactor(Math.abs(mAngleX) % 360));
         cylinder.draw(scratch);
         textureCircle2.draw(scratch,textures[0],-99,0);
         Matrix.translateM(outlineTranslator,0,0,0,0.5f);

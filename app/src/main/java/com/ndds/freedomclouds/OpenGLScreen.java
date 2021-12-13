@@ -34,7 +34,8 @@ public class OpenGLScreen extends GLSurfaceView {
     private final float TOUCH_SCALE_FACTOR = 180.0f / 320;
     private float previousX;
     private float previousY;
-    public boolean quickSpinEnabled = false;
+    private float downY;
+    private float downX;
     private Handler handler = new Handler();
     public void glow(){
         if(getTag().equals("2"))
@@ -43,9 +44,6 @@ public class OpenGLScreen extends GLSurfaceView {
         customRenderer.doGlow = 1;
         setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
         requestRender();
-    }
-    public void quickSpin(){
-        quickSpinEnabled = true;
     }
     Handler idleHandler;
     ObjectAnimator idleAnimator;
@@ -56,11 +54,13 @@ public class OpenGLScreen extends GLSurfaceView {
     @Override
     public boolean onTouchEvent(MotionEvent e) {
         float x = e.getX();
-//        float y = e.getY();
+        float y = e.getY();
 
         switch (e.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 this.autoRotate = false;
+                this.downY = y;
+                this.downX = x;
                 idleAnimator.end();
                 idleHandler.removeCallbacksAndMessages(null);
                 handler.removeCallbacksAndMessages(null);
@@ -89,8 +89,9 @@ public class OpenGLScreen extends GLSurfaceView {
             case MotionEvent.ACTION_MOVE:
 
                 float dx = x - previousX;
-//                float dy = y - previousY;
-                float factor = 1.0f;
+                float dy = y - previousY;
+//                float factorX = 1.0f;
+//                float factorY = -1.0f;
                 // reverse direction of rotation above the mid-line
 //                if (y > getHeight() / 2) {
 //                    dx = dx * -1 ;
@@ -98,21 +99,37 @@ public class OpenGLScreen extends GLSurfaceView {
 //                if(Math.abs(dx) < 10)
 //                    return true;
                 // reverse direction of rotation to left of the mid-line
-                if (x < getWidth() / 2) {
-                    factor = -1.0f;
-                    //dy = dy * -1 ;
+//                if (y > getHeight() / 2) {
+//                    factorY = 1.0f;
+//                    //dy = dy * -1 ;
+//                }
+//                if (x < getWidth() / 2) {
+//                    factorX = -1.0f;
+//                    //dy = dy * -1 ;
+//                }
+                if (Math.abs(y-downY) > 50) {
+
+
+                    customRenderer.setAngleY(
+                            customRenderer.getAngleY() +
+                                    ((dy) * TOUCH_SCALE_FACTOR));
+                }else{
+                    customRenderer.setAngleX(
+                            customRenderer.getAngleX() +
+                                    ((dx) * TOUCH_SCALE_FACTOR));
+
                 }
-                customRenderer.setAngle(
-                        customRenderer.getAngle() +
-                                ((dx + factor) * TOUCH_SCALE_FACTOR));
+
+
 //                customRenderer.setAngle(
 //                        customRenderer.getAngle() +
 //                                ((dx + dy) * TOUCH_SCALE_FACTOR));
                 requestRender();
+                break;
         }
 
         previousX = x;
-//        previousY = y;
+        previousY = y;
         return true;
 
     }
