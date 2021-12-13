@@ -77,9 +77,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
+            android:paddingLeft="7dp"
             android:text="Loading"
             android:textColor="@android:color/white"
-            android:textSize="30sp"
+            android:textSize="@dimen/normalEmblemTypeTextSize"
             android:textStyle="bold" />
 
         <ImageView

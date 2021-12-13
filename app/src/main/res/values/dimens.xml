@@ -1,3 +1,5 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
+    <dimen name="normalEmblemTypeTextSize">25sp</dimen>
+    <dimen name="quoteTextSize">15sp</dimen>
 </resources>

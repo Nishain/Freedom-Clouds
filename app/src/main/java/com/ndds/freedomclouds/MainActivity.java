@@ -5,9 +5,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.ConfigurationInfo;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -20,12 +23,14 @@ import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,6 +43,8 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Objects;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class MainActivity extends AppCompatActivity implements DatePickerDialog.OnDateSetListener, View.OnClickListener {
 
@@ -48,8 +55,9 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
     SharedPreferences sharedPreferences;
     private AlertDialog settingsAlert;
     private SoundPool soundPool;
-
+    public Handler quoteHandler =  null;
     private void initOpenGL(int tag){
+
         ViewGroup view = (ViewGroup)getLayoutInflater().inflate(R.layout.opengl_layout, null);
 
         (view.getChildAt(0)).setTag(String.valueOf(tag));
@@ -115,7 +123,8 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
         overridePendingTransition(0,0);
         setContentView(R.layout.activity_main);
-        ((TextView)findViewById(R.id.emblemType)).setTypeface(Typeface.createFromAsset(getAssets(),"fonts/bananaFont.ttf"));
+
+        ((TextView)findViewById(R.id.emblemType)).setTypeface(Typeface.createFromAsset(getAssets(),"fonts/CherrySwash-Regular.ttf"));
         initSoundPool();
         findViewById(R.id.emblem_loading_indicator).setVisibility(View.GONE);
         sharedPreferences = getSharedPreferences("configuration",MODE_PRIVATE);
@@ -144,8 +153,10 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                     ((TextView) findViewById(R.id.emblemType)).setText("The Gift");
                     initOpenGL(2);
                     showInstruction();
-                }else
+                }else {
                     initOpenGL(1);
+                    generateRandomQuote();
+                }
             }
 
             @Override
@@ -160,8 +171,8 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         rotateHintAnimator.setRepeatCount(7);
         rotateHintAnimator.setDuration(500);
         idleHandler = new Handler();
-
         rotateHintAnimator.start();
+
     }
     public void showCalender(){
         Calendar calendar = Calendar.getInstance();
@@ -171,11 +182,14 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
     }
     public void glow(View v){
         openGLScreen.glow();
+        playSound(R.raw.magical);
     }
     public void setEmblemTypeText(String text){
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                //((TextView)findViewById(R.id.emblemType)).setTypeface(Typeface.createFromAsset(getAssets(),"fonts/Tangerine_Bold.ttf"));
+                ((TextView)findViewById(R.id.emblemType)).setTextSize(TypedValue.COMPLEX_UNIT_PX,getResources().getDimensionPixelSize(R.dimen.normalEmblemTypeTextSize));
                 ((TextView)findViewById(R.id.emblemType)).setText(text+" Emblem");
             }
         });
@@ -270,10 +284,39 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
             }
         });
     }
+    public void generateRandomQuote(){
+        if(quoteHandler == null)
+            quoteHandler = new Handler();
+        else {
+            quoteHandler.removeCallbacksAndMessages(null);
+            quoteHandler = null;
+        }
+        quoteHandler.postDelayed(() -> runOnUiThread(() -> {
+            ArrayList<String> quotesArrayList = new ArrayList<>();
+            try {
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(getAssets().open("quotes.txt")));
+                String quote = bufferedReader.readLine();
+                while (quote != null){
+                    quotesArrayList.add(quote);
+                    quote = bufferedReader.readLine();
+                }
+                String[] quotes = quotesArrayList.toArray(new String[0]);
+                String randomQuote = quotes[(int) (Math.random() * quotes.length)];
+                //((TextView)findViewById(R.id.emblemType)).setTypeface(Typeface.createFromAsset(getAssets(),"fonts/Tangerine_Regular.ttf"));
+                ((TextView)findViewById(R.id.emblemType)).setTextSize(TypedValue.COMPLEX_UNIT_PX,getResources().getDimensionPixelSize(R.dimen.quoteTextSize));
+                ((TextView)findViewById(R.id.emblemType)).setText(randomQuote);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }),1500);
+    }
     private void showInstruction(){
         ViewGroup viewGroup = (ViewGroup) getLayoutInflater().inflate(R.layout.introduction,null);
 
         AlertDialog alertDialog = new AlertDialog.Builder(this).setView(viewGroup).setCancelable(false).create();
+        Bitmap originalImage = BitmapFactory.decodeResource(getResources(),R.drawable.introduction_background);
+        ((ImageView)viewGroup.findViewById(R.id.instruction_bg)).setImageBitmap(Bitmap.createScaledBitmap(originalImage,originalImage.getWidth()/4,originalImage.getHeight()/4,false));
         viewGroup.findViewById(R.id.introduction_ok).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

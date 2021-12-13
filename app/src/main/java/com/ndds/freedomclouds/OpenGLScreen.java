@@ -14,6 +14,9 @@ import java.util.ArrayList;
 public class OpenGLScreen extends GLSurfaceView {
     CustomRenderer customRenderer = null;
     public MainActivity activity;
+    private Handler quoteHandler;
+    private boolean isGiftRenderer;
+
     public OpenGLScreen(Context context, AttributeSet attrs) {
 
         super(context,attrs);
@@ -22,7 +25,7 @@ public class OpenGLScreen extends GLSurfaceView {
     }
     @SuppressWarnings("unchecked")
     public void initRenderer(Context context, Object ... rendererParams){
-        boolean isGiftRenderer = getTag().equals("2");
+        isGiftRenderer = getTag().equals("2");
         customRenderer = isGiftRenderer ? new GiftRenderer(context,this) : new CustomRenderer(context,this,(ArrayList<Bitmap>) rendererParams[0], (String[]) rendererParams[1]);
         setEGLConfigChooser(true);
         setEGLConfigChooser( 8, 8, 8, 8, 16, 0 );
@@ -31,11 +34,13 @@ public class OpenGLScreen extends GLSurfaceView {
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
     }
     public boolean autoRotate = false;
+    public boolean resetYMovement = true;
     private final float TOUCH_SCALE_FACTOR = 180.0f / 320;
     private float previousX;
     private float previousY;
     private float downY;
     private float downX;
+    private boolean isXRotating = true;
     private Handler handler = new Handler();
     public void glow(){
         if(getTag().equals("2"))
@@ -51,6 +56,17 @@ public class OpenGLScreen extends GLSurfaceView {
         idleHandler = handler;
         idleAnimator = objectAnimator;
     }
+    public void resetXAngle(){
+        this.handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if(OpenGLScreen.this.customRenderer.quickSpinAngle > 0 || OpenGLScreen.this.customRenderer.doGlow != 0)
+                    return;
+                OpenGLScreen.this.autoRotate = true;
+                setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+            }
+        },1000);
+    }
     @Override
     public boolean onTouchEvent(MotionEvent e) {
         float x = e.getX();
@@ -64,10 +80,16 @@ public class OpenGLScreen extends GLSurfaceView {
                 idleAnimator.end();
                 idleHandler.removeCallbacksAndMessages(null);
                 handler.removeCallbacksAndMessages(null);
+                if(!isGiftRenderer && activity.quoteHandler != null) {
+                    activity.quoteHandler.removeCallbacksAndMessages(null);
+                    activity.quoteHandler = null;
+                }
                 setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
                 requestRender();
                 break;
             case MotionEvent.ACTION_UP:
+                if(!isGiftRenderer)
+                    activity.generateRandomQuote();
                 this.idleHandler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -75,16 +97,12 @@ public class OpenGLScreen extends GLSurfaceView {
                             idleAnimator.start();
                     }
                 },5000);
-                this.handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if(OpenGLScreen.this.customRenderer.quickSpinAngle > 0 || OpenGLScreen.this.customRenderer.doGlow != 0)
-                            return;
-                        OpenGLScreen.this.autoRotate = true;
-                        setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
-                        requestRender();
-                    }
-                },1000);
+
+                if(Math.abs(customRenderer.mAngleY) > 0) {
+                    resetYMovement = true;
+                    setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+                }
+                resetXAngle();
                 break;
             case MotionEvent.ACTION_MOVE:
 
@@ -107,20 +125,18 @@ public class OpenGLScreen extends GLSurfaceView {
 //                    factorX = -1.0f;
 //                    //dy = dy * -1 ;
 //                }
-                if (Math.abs(y-downY) > 50) {
-
-
-                    customRenderer.setAngleY(
-                            customRenderer.getAngleY() +
-                                    ((dy) * TOUCH_SCALE_FACTOR));
-                }else{
+                if(isXRotating || Math.abs((x-downX)) > 50){
+                    isXRotating = true;
                     customRenderer.setAngleX(
                             customRenderer.getAngleX() +
                                     ((dx) * TOUCH_SCALE_FACTOR));
-
                 }
-
-
+                if (!isXRotating || Math.abs(y-downY) > 50) {
+                    isXRotating = false;
+                    customRenderer.setAngleY(
+                            customRenderer.getAngleY() +
+                                    ((dy) * TOUCH_SCALE_FACTOR));
+                }
 //                customRenderer.setAngle(
 //                        customRenderer.getAngle() +
 //                                ((dx + dy) * TOUCH_SCALE_FACTOR));
@@ -133,4 +149,6 @@ public class OpenGLScreen extends GLSurfaceView {
         return true;
 
     }
+
+
 }

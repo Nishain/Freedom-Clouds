@@ -3,7 +3,7 @@
     <string name="title_activity_slash_screen">SlashScreen</string>
     <string name="_30_days_progress">30 Days progress</string>
     <string name="days_completed_in_week">Days completed in week</string>
-    <string name="developer_note">This app is simple day counter to count the progress of passed days preventing unhealthy habits.This app is built on opengl 2.0 version so it is expected to supported for many devices.The instruction for the app is simple ,you first setup the start date from settings or optionally you reset the timer to current date if you wish to start over. You can also reset the app as new from settings so it will treat you as a new user on next time when you open the app.If you find the rotating emblem as a empty white circle just swipe left or right in the screen (pss…it\'s a rare bug).Hope you enjoy this simple app and helpful to take break from unhealthy habits.</string>
+    <string name="developer_note">This app is simple day counter to count the progress of passed days preventing unhealthy habits.This app is built on opengl 2.0 version so it is expected to supported for many devices.The instruction for the app is simple ,you first setup the start date from settings or optionally you reset the timer to current date if you wish to start over. You can also reset the app as new from settings so it will treat you as a new user on next time when you open the app.Hope you enjoy this simple app and helpful to take break from unhealthy habits.</string>
     <string name="welcome_note">Greetings! with this simple app you can count days you have successfully avoided bad habits.First of, lets enter the date you have given up your bad habit</string>
     <!-- Strings used for fragments for navigation -->
 </resources>
