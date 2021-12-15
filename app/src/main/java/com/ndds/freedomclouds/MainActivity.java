@@ -1,28 +1,24 @@
 package com.ndds.freedomclouds;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
-import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.ConfigurationInfo;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.ColorFilter;
 import android.graphics.PixelFormat;
 import android.graphics.Typeface;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.media.SoundPool;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
+import android.speech.tts.TextToSpeech;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,16 +31,14 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.BufferedInputStream;
+import androidx.appcompat.app.AppCompatActivity;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Objects;
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class MainActivity extends AppCompatActivity implements DatePickerDialog.OnDateSetListener, View.OnClickListener {
 
@@ -56,6 +50,8 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
     private AlertDialog settingsAlert;
     private SoundPool soundPool;
     public Handler quoteHandler =  null;
+    private MediaPlayer emblemRotateSound;
+
     private void initOpenGL(int tag){
 
         ViewGroup view = (ViewGroup)getLayoutInflater().inflate(R.layout.opengl_layout, null);
@@ -90,12 +86,32 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         openGLScreen.getHolder().setFormat(PixelFormat.TRANSPARENT);
         openGLScreen.setZOrderOnTop(true);
     }
+
+
+    public void pauseEmblemSound(){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                emblemRotateSound.pause();
+            }
+        });
+    }
+    public void playEmblemSound(){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                //emblemRotateSound.seekTo(0);
+                emblemRotateSound.start();
+            }
+        });
+
+    }
     private void initSoundPool(){
         AudioAttributes attributes = null;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             attributes = new AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_GAME)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                     .build();
             soundPool = new SoundPool.Builder()
                     .setAudioAttributes(attributes)
@@ -126,6 +142,19 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
         ((TextView)findViewById(R.id.emblemType)).setTypeface(Typeface.createFromAsset(getAssets(),"fonts/CherrySwash-Regular.ttf"));
         initSoundPool();
+        emblemRotateSound = MediaPlayer.create(this,R.raw.rotation);
+
+        emblemRotateSound.setLooping(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            emblemRotateSound.setAudioAttributes(
+                    new AudioAttributes.Builder()
+                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                            .setUsage(AudioAttributes.USAGE_MEDIA)
+                            .build()
+            );
+        }else
+            emblemRotateSound.setAudioStreamType(AudioManager.STREAM_MUSIC);
+
         findViewById(R.id.emblem_loading_indicator).setVisibility(View.GONE);
         sharedPreferences = getSharedPreferences("configuration",MODE_PRIVATE);
         if(sharedPreferences.contains(START_TIME)){
@@ -203,6 +232,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         settingsView.findViewById(R.id.reset_memory).setOnClickListener(this);
         settingsAlert = new AlertDialog.Builder(this).setView(settingsView).create();
         settingsAlert.show();
+        playSound(R.raw.paper_flip);
     }
 
     @Override
@@ -248,6 +278,12 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                 break;
             case R.id.settings_developer_notice:
                 ViewGroup viewGroup = (ViewGroup) getLayoutInflater().inflate(R.layout.developer_note,null);
+                AssetManager assetManager = getAssets();
+                for (int i = 0; i < viewGroup.getChildCount(); i++) {
+                    View view = viewGroup.getChildAt(i);
+                    if(view instanceof TextView && !(view instanceof Button))
+                        ((TextView) view).setTypeface(Typeface.createFromAsset(assetManager,"fonts/CherrySwash-Regular.ttf"));
+                }
                 AlertDialog noteAlert = new AlertDialog.Builder(this).setView(viewGroup).create();
                 viewGroup.findViewById(R.id.developer_note_ok).setOnClickListener(v1 -> noteAlert.dismiss());
                 noteAlert.show();
@@ -305,7 +341,6 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                 //((TextView)findViewById(R.id.emblemType)).setTypeface(Typeface.createFromAsset(getAssets(),"fonts/Tangerine_Regular.ttf"));
                 ((TextView)findViewById(R.id.emblemType)).setTextSize(TypedValue.COMPLEX_UNIT_PX,getResources().getDimensionPixelSize(R.dimen.quoteTextSize));
                 ((TextView)findViewById(R.id.emblemType)).setText(randomQuote);
-
             } catch (IOException e) {
                 e.printStackTrace();
             }

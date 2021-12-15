@@ -16,6 +16,7 @@ public class OpenGLScreen extends GLSurfaceView {
     public MainActivity activity;
     private Handler quoteHandler;
     private boolean isGiftRenderer;
+    private boolean needToPlayEmblemSound = true;
 
     public OpenGLScreen(Context context, AttributeSet attrs) {
 
@@ -88,6 +89,7 @@ public class OpenGLScreen extends GLSurfaceView {
                 requestRender();
                 break;
             case MotionEvent.ACTION_UP:
+                activity.pauseEmblemSound();
                 if(!isGiftRenderer)
                     activity.generateRandomQuote();
                 this.idleHandler.postDelayed(new Runnable() {
@@ -125,6 +127,19 @@ public class OpenGLScreen extends GLSurfaceView {
 //                    factorX = -1.0f;
 //                    //dy = dy * -1 ;
 //                }
+                if((int) (dx * TOUCH_SCALE_FACTOR) == 0 && (int)(dy * TOUCH_SCALE_FACTOR) == 0) {
+                    if(!needToPlayEmblemSound) {
+                        needToPlayEmblemSound = true;
+                        activity.pauseEmblemSound();
+                    }
+                }
+                else{
+                    if (needToPlayEmblemSound) {
+                        needToPlayEmblemSound = false;
+                        activity.playEmblemSound();
+                    }
+                }
+
                 if(isXRotating || Math.abs((x-downX)) > 50){
                     isXRotating = true;
                     customRenderer.setAngleX(
