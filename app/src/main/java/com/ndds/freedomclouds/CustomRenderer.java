@@ -4,14 +4,25 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
+import android.util.Log;
 import android.widget.Toast;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.Stack;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -143,6 +154,204 @@ class CustomRenderer implements GLSurfaceView.Renderer {
         GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, picture, 0);
     }
 
+    private float[] getRadialCoordinate(Random r,float _radius) {
+        float radius = _radius * 0.95f;
+        int trialX, trialY;
+        double trialRadius;
+        do {
+            trialX = r.nextInt((int) radius);
+            trialY = r.nextInt((int) radius) * (r.nextBoolean() ? -1 : 1);
+            trialRadius = Math.sqrt((trialX ^ 2) * (trialY ^ 2));
+        } while (trialRadius >= radius);
+        return new float[] { trialX + _radius, trialY + _radius };
+    }
+
+    private boolean isLineIntercepting(float[][] lineA, float[][] lineB){
+        double gradientA = (lineA[1][1] - lineA[0][1]) / (lineA[1][0] - lineA[0][0]);
+        double gradientB = (lineB[1][1] - lineB[0][1]) / (lineB[1][0] - lineB[0][0]);
+
+
+        double coefficient =  gradientA - gradientB;
+        double constant = lineB[0][1] - lineA[0][1] - (gradientB * lineB[0][0]) + (gradientA * lineA[0][0]);
+        if (coefficient == 0 ) return false; // parallel lines
+
+        double interceptingX = constant / coefficient;
+        if((Math.min(lineA[1][0],lineA[0][0]) < interceptingX &&
+                Math.max(lineA[1][0],lineA[0][0]) > interceptingX
+         ) && (Math.min(lineB[1][0],lineB[0][0]) < interceptingX &&
+                Math.max(lineB[1][0],lineB[0][0]) > interceptingX
+        )) {
+
+            return true;
+        }
+        else return false;
+    }
+
+    static class DebugCircle {
+        float startX, startY;
+        DebugCircle(float[] data) {
+            this.startX = data[0];
+            this.startY = data[1];
+        }
+
+    }
+    static class LineCoordinate {
+        float[] startCoordinate, endCoordinate;
+        boolean startConsumed = false, endConsumed = false;
+        boolean debug = false;
+
+        public LineCoordinate(float[] startCoordinate, float[] endCoordinate) {
+            this.startCoordinate = startCoordinate;
+            this.endCoordinate = endCoordinate;
+        }
+
+        public LineCoordinate consumeStart(){
+            startConsumed = true;
+            return this;
+        }
+
+        public LineCoordinate closeLine(){
+            startConsumed = true;
+            endConsumed = true;
+            debug = true;
+            return this;
+        }
+
+        boolean hasOpenNode() {
+            return (!endConsumed) || (!startConsumed);
+        }
+
+        public float[] getOpenNode(){
+            if(!endConsumed) return endCoordinate;
+            if(!startConsumed) return  startCoordinate;
+            return null;
+        }
+
+        public float[] getClosedNode() {
+            if(startConsumed) return  startCoordinate;
+            if(endConsumed) return endCoordinate;
+            return null;
+        }
+
+        public int getOpenNodeIndex(){
+            if(!startConsumed) return 0;
+            if(!endConsumed) return 1;
+            return -1;
+        }
+
+        public float[] getEdgeCoordinate(int index){
+            return index == 0 ? startCoordinate : endCoordinate;
+        }
+
+        public void consumeEdgeAt(int index){
+            if(index == 0)
+                startConsumed = true;
+            else
+                endConsumed = true;
+        }
+
+        public float[][] get() {
+            return new float[][] { startCoordinate, endCoordinate };
+        }
+    }
+    private boolean isLineEdgeJoined(LineCoordinate a, LineCoordinate b) {
+        return a.endCoordinate == b.endCoordinate || a.endCoordinate == b.startCoordinate
+                || b.startCoordinate == a.startCoordinate;
+    }
+    private boolean checkIfInterceptingAnyLine(ArrayList<LineCoordinate> lineCollection, LineCoordinate testLine) {
+        for(LineCoordinate line : lineCollection) {
+             if(isLineIntercepting(testLine.get(), line.get())) return true;
+        }
+        return false;
+    }
+    private Bitmap drawRandomEmblem(int width,int height) {
+        Paint paint = new Paint();
+        Bitmap resutantImage = Bitmap.createBitmap(width,height,Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(resutantImage);
+        int radius = height / 2;
+        Random r = new Random();
+        canvas.drawColor(Color.RED);
+        paint.setColor(Color.WHITE);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(3);
+
+        ArrayList<LineCoordinate> lineDB = new ArrayList<>();
+
+        for (int i = 0; i < 30; i++) {
+            LineCoordinate proposedLine = null;
+
+            if(i == 0) {
+                proposedLine = new LineCoordinate(
+                        getRadialCoordinate(r, radius),
+                        getRadialCoordinate(r, radius)
+                );
+                lineDB.add(proposedLine);
+            } else {
+                float[] startingPoint,endPoint;
+                int limit = 0;
+
+                outerLoop:while(limit < 100){
+                    limit++;
+                    int randomPoint1 = r.nextInt(lineDB.size());
+                    int randomAxis = r.nextInt(2);
+
+                    startingPoint = lineDB.get(randomPoint1).getEdgeCoordinate(randomAxis);
+                    endPoint = getRadialCoordinate(r,radius);
+                    proposedLine = new LineCoordinate(startingPoint, endPoint).consumeStart();
+
+                    if(checkIfInterceptingAnyLine(lineDB, proposedLine)) continue;
+
+                    lineDB.add(proposedLine);
+                    lineDB.get(randomPoint1).consumeEdgeAt(randomAxis);
+                    break;
+                }
+            }
+        }
+        ArrayList<DebugCircle> debugCircles = new ArrayList<>();
+        ArrayList<DebugCircle> coveredCircles = new ArrayList<>();
+        ArrayList<LineCoordinate> closingLines = new ArrayList<>();
+
+        for(LineCoordinate openLine : lineDB) {
+            if(!openLine.hasOpenNode()) continue;
+            ArrayList<LineCoordinate> shortList = new ArrayList<>();
+            shortList.addAll(lineDB);
+            shortList.addAll(closingLines);
+            while (!shortList.isEmpty()) {
+                LineCoordinate trialLine = shortList.get(r.nextInt(shortList.size()));
+                if(openLine.startCoordinate.equals(trialLine.startCoordinate) || openLine.endCoordinate.equals(trialLine.endCoordinate)) {
+                    shortList.remove(trialLine);
+                    continue;
+                }
+
+                int edgeIndex = 0;
+                LineCoordinate proposedLine = new LineCoordinate(openLine.getOpenNode(), trialLine.getEdgeCoordinate(edgeIndex)).closeLine();
+                if(checkIfInterceptingAnyLine(shortList, proposedLine)) {
+                    edgeIndex = 1;
+                    proposedLine = new LineCoordinate(openLine.getOpenNode(), trialLine.getEdgeCoordinate(edgeIndex)).closeLine();
+                    if(checkIfInterceptingAnyLine(shortList, proposedLine)) {
+                        shortList.remove(trialLine);
+                        continue;
+                    }
+                }
+                openLine.consumeEdgeAt(edgeIndex);
+                closingLines.add(proposedLine);
+                break;
+            }
+        }
+        lineDB.addAll(closingLines);
+
+
+        for(LineCoordinate line : lineDB) {
+                if(line.debug) paint.setColor(Color.YELLOW);
+                else paint.setColor(Color.WHITE);
+                canvas.drawLine(line.startCoordinate[0],line.startCoordinate[1],line.endCoordinate[0],line.endCoordinate[1], paint);
+        }
+        Paint debugPaint = new Paint();
+        debugPaint.setStyle(Paint.Style.FILL);
+        debugPaint.setColor(Color.GREEN);
+
+        return resutantImage;
+    }
     private void loadTextures() {
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 
@@ -158,8 +367,8 @@ class CustomRenderer implements GLSurfaceView.Renderer {
 
         bindPicture(emblemBack, 0);
         bindPicture(glow, 1);
-
-        for (int i = 0; i < emblemImages.length; i++) {
+        bindPicture(drawRandomEmblem(glow.getHeight(),glow.getWidth()),2);
+        for (int i = 1; i < emblemImages.length; i++) {
             wrapInsideBackground(emblemImages[i], canvas, paint, background);
             Bitmap emblem = resultantMutatedImage;
             bindPicture(flipImage(emblem), i + 2);
