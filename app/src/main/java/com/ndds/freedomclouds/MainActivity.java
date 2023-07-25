@@ -1,11 +1,18 @@
 package com.ndds.freedomclouds;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.animation.TimeInterpolator;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.content.ComponentName;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -18,10 +25,11 @@ import android.media.SoundPool;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.speech.tts.TextToSpeech;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
@@ -51,6 +59,39 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
     private SoundPool soundPool;
     public Handler quoteHandler =  null;
     private MediaPlayer emblemRotateSound;
+
+    class FiddleHintAnimationListener extends AnimatorListenerAdapter {
+        ObjectAnimator moveAnimator;
+        View view;
+
+        FiddleHintAnimationListener(View v) {
+            view = v;
+        }
+        @Override
+        public void onAnimationCancel(Animator animation) {
+            super.onAnimationCancel(animation);
+            if (moveAnimator != null)
+                moveAnimator.cancel();
+        }
+
+        @Override
+        public void onAnimationEnd(Animator animation) {
+            super.onAnimationEnd(animation);
+            moveAnimator = ObjectAnimator.ofFloat(view, "translationX", -20   , 20);
+            moveAnimator.setRepeatCount(4);
+            moveAnimator.setDuration(500);
+            moveAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+            moveAnimator.setRepeatMode(ValueAnimator.REVERSE);
+            moveAnimator.start();
+            moveAnimator.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    super.onAnimationEnd(animation);
+                    ObjectAnimator.ofFloat(view, "alpha", 1, 0).start();
+                }
+            });
+        }
+    }
 
     private void initOpenGL(int tag){
 
@@ -100,7 +141,6 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                //emblemRotateSound.seekTo(0);
                 emblemRotateSound.start();
             }
         });
@@ -132,6 +172,13 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         super.finish();
     }
 
+    private void applyTypeFace(int[] ids) {
+        Typeface typeface = Typeface.createFromAsset(getAssets(),"fonts/CherrySwash-Regular.ttf");
+        for (int id: ids) {
+            ((TextView)findViewById(id)).setTypeface(typeface);
+        }
+    }
+
     private static final String START_TIME = "startTime";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -140,7 +187,14 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         overridePendingTransition(0,0);
         setContentView(R.layout.activity_main);
 
-        ((TextView)findViewById(R.id.emblemType)).setTypeface(Typeface.createFromAsset(getAssets(),"fonts/CherrySwash-Regular.ttf"));
+        applyTypeFace(new int[] {
+                R.id.emblemType,
+                R.id.remaining_7_days_txt,
+                R.id.remaining_30_days_txt,
+                R.id.startDateTxt,
+//                R.id.dayCount,
+        });
+
         initSoundPool();
         emblemRotateSound = MediaPlayer.create(this,R.raw.rotation);
 
@@ -196,15 +250,19 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         findViewById(R.id.splash_overlay).startAnimation(slideUpAnimation);
         View v = findViewById(R.id.rotate_hint);
         rotateHintAnimator = ObjectAnimator.ofFloat(v, "alpha", 0, 1);
-        rotateHintAnimator.setRepeatMode(ValueAnimator.REVERSE);
-        rotateHintAnimator.setRepeatCount(7);
-        rotateHintAnimator.setDuration(500);
-        idleHandler = new Handler();
-        rotateHintAnimator.start();
+        rotateHintAnimator.addListener(new FiddleHintAnimationListener(v));
 
+        idleHandler = new Handler();
+        idleHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if(!rotateHintAnimator.isStarted())
+                    rotateHintAnimator.start();
+            }
+        },5000);
     }
     public void showCalender(){
-        Calendar calendar = Calendar.getInstance();
+        Calendar calendar =  Calendar.getInstance();
         DatePickerDialog datePickerDialog = new DatePickerDialog(this,this,calendar.get(Calendar.YEAR),calendar.get(Calendar.MONTH),calendar.get(Calendar.DAY_OF_MONTH));
         datePickerDialog.setTitle("Select a starting date");
         datePickerDialog.show();
@@ -217,9 +275,8 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                //((TextView)findViewById(R.id.emblemType)).setTypeface(Typeface.createFromAsset(getAssets(),"fonts/Tangerine_Bold.ttf"));
                 ((TextView)findViewById(R.id.emblemType)).setTextSize(TypedValue.COMPLEX_UNIT_PX,getResources().getDimensionPixelSize(R.dimen.normalEmblemTypeTextSize));
-                ((TextView)findViewById(R.id.emblemType)).setText(text+" Emblem");
+                ((TextView)findViewById(R.id.emblemType)).setText(text+" Face");
             }
         });
     }
@@ -230,6 +287,8 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         settingsView.findViewById(R.id.settings_reset_today).setOnClickListener(this);
         settingsView.findViewById(R.id.settings_developer_notice).setOnClickListener(this);
         settingsView.findViewById(R.id.reset_memory).setOnClickListener(this);
+        settingsView.findViewById(R.id.restart_app).setOnClickListener(this);
+        settingsView.findViewById(R.id.settings_dismiss).setOnClickListener(this);
         settingsAlert = new AlertDialog.Builder(this).setView(settingsView).create();
         settingsAlert.show();
         playSound(R.raw.paper_flip);
@@ -242,10 +301,10 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
     @SuppressLint("DefaultLocale")
     private void updateDate(int year, int month, int dayOfMonth,boolean doSave){
-        Calendar settedCalender = Calendar.getInstance();
-        settedCalender.set(year,month,dayOfMonth);
+        Calendar editedCalender = Calendar.getInstance();
+        editedCalender.set(year,month,dayOfMonth);
         Calendar currentCalender = Calendar.getInstance();
-        int days = (int) ((currentCalender.getTime().getTime() - settedCalender.getTime().getTime()) / (1000 * 60 * 60 * 24));
+        int days = (int) ((currentCalender.getTime().getTime() - editedCalender.getTime().getTime()) / (1000 * 60 * 60 * 24));
         if(days < 0){
             Toast.makeText(this, "Can only enter a date on or before today's date", Toast.LENGTH_LONG).show();
             return;
@@ -258,7 +317,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         ((TextView)findViewById(R.id.startDateTxt)).setText(String.format("Since %d/%d/%d",dayOfMonth,month+1,year));
         ((TextView)findViewById(R.id.remaining_7_days_txt)).setText(String.format("%s %s",getString(R.string.days_completed_in_week), days % 7+"/7"));
         ((TextView)findViewById(R.id.remaining_30_days_txt)).setText(String.format("%s %s",getString(R.string._30_days_progress), days % 30+"/30"));
-        startTime = settedCalender.getTime().getTime();
+        startTime = editedCalender.getTime().getTime();
         if(doSave)
             sharedPreferences.edit().putString(START_TIME,String.format("%d/%d/%d",year,month,dayOfMonth)).apply();
     }
@@ -293,13 +352,28 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                 if(((Button)v).getText().toString().contains("Are you sure ?")){
                     settingsAlert.dismiss();
                     sharedPreferences.edit().remove(START_TIME).apply();
-                    Toast.makeText(this, "will be effect on next app launch", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "restarting the app", Toast.LENGTH_SHORT).show();
+                    restartApp();
                     return;
                 }
                 v.setBackgroundResource(R.drawable.round_beauty_orange);
                 ((Button)v).setText("Are you sure ? (yes)");
+            case R.id.restart_app:
+                restartApp();
+            case  R.id.settings_dismiss:
+                settingsAlert.dismiss();
         }
     }
+
+    private void restartApp() {
+        PackageManager packageManager = getPackageManager();
+        Intent intent = packageManager.getLaunchIntentForPackage(getPackageName());
+        ComponentName componentName = intent.getComponent();
+        Intent mainIntent = Intent.makeRestartActivityTask(componentName);
+        finish();
+        startActivity(mainIntent);
+    }
+
     public void unwrapGift(){
         runOnUiThread(new Runnable() {
             @Override
@@ -338,7 +412,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                 }
                 String[] quotes = quotesArrayList.toArray(new String[0]);
                 String randomQuote = quotes[(int) (Math.random() * quotes.length)];
-                //((TextView)findViewById(R.id.emblemType)).setTypeface(Typeface.createFromAsset(getAssets(),"fonts/Tangerine_Regular.ttf"));
+
                 ((TextView)findViewById(R.id.emblemType)).setTextSize(TypedValue.COMPLEX_UNIT_PX,getResources().getDimensionPixelSize(R.dimen.quoteTextSize));
                 ((TextView)findViewById(R.id.emblemType)).setText(randomQuote);
             } catch (IOException e) {

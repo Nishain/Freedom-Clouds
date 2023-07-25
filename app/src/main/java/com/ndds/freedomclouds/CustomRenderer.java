@@ -10,19 +10,9 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
-import android.util.Log;
-import android.widget.Toast;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.ListIterator;
-import java.util.Map;
 import java.util.Random;
-import java.util.Set;
-import java.util.Stack;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -125,17 +115,10 @@ class CustomRenderer implements GLSurfaceView.Renderer {
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
     }
 
-    void wrapInsideBackground(Bitmap image, Canvas canvas, Paint paint, Bitmap background) {
-        //Bitmap resultBitmap = Bitmap.createBitmap(background.getWidth(),background.getHeight(),background.getConfig());
-        //Canvas canvas = new Canvas(resultBitmap);
-
+    void wrapInsideOuterCircle(Bitmap image, Canvas canvas, Paint paint, Bitmap background) {
         int offset = (int) (background.getHeight() * 0.08f);
         Bitmap newImage = Bitmap.createScaledBitmap(image, background.getWidth() - (offset * 2), background.getHeight() - (offset * 2), false);
-        //canvas.drawBitmap(background,new android.graphics.Matrix(),paint);
-//        Rect sourceRect = new Rect(0,0,image.getWidth(),image.getHeight());
-//        Rect dest = new Rect(20,20,image.getWidth()-20,image.getHeight()-20);
         canvas.drawBitmap(newImage, offset, offset, paint);
-        //return  resultBitmap;
     }
 
     Bitmap getImage(int resourceCode) {
@@ -361,17 +344,15 @@ class CustomRenderer implements GLSurfaceView.Renderer {
         Paint paint = new Paint();
         Bitmap resultantMutatedImage = background.copy(background.getConfig(), true);
         Canvas canvas = new Canvas(resultantMutatedImage);
-        Bitmap emblemBack = getImage(R.drawable.emblem_back);
-        wrapInsideBackground(getImage(R.drawable.emble_glowm), canvas, paint, background);
-        Bitmap glow = resultantMutatedImage;
+        Bitmap backSide = getImage(R.drawable.emblem_back);
+        wrapInsideOuterCircle(getImage(R.drawable.emblem_glow), canvas, paint, background);
 
-        bindPicture(emblemBack, 0);
-        bindPicture(glow, 1);
-        bindPicture(drawRandomEmblem(glow.getHeight(),glow.getWidth()),2);
-        for (int i = 1; i < emblemImages.length; i++) {
-            wrapInsideBackground(emblemImages[i], canvas, paint, background);
-            Bitmap emblem = resultantMutatedImage;
-            bindPicture(flipImage(emblem), i + 2);
+        bindPicture(backSide, 0);
+        bindPicture(resultantMutatedImage, 1);
+
+        for (int i = 0; i < emblemImages.length; i++) {
+            wrapInsideOuterCircle(emblemImages[i], canvas, paint, background);
+            bindPicture(flipImage(resultantMutatedImage), i + 2);
         }
 
         float outlineOffset = 0.0125f;
@@ -399,9 +380,9 @@ class CustomRenderer implements GLSurfaceView.Renderer {
     private final float[] vPMatrix = new float[16];
     private final float[] projectionMatrix = new float[16];
     private final float[] viewMatrix = new float[16];
-    private float[] rotationMatrix = new float[16];
-    private float[] rotationMatrixY = new float[16];
-    private float[] outlineTranslator = new float[16];
+    private final float[] rotationMatrix = new float[16];
+    private final float[] rotationMatrixY = new float[16];
+    private final float[] outlineTranslator = new float[16];
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {

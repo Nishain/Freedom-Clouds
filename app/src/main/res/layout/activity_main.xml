@@ -77,21 +77,23 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:paddingLeft="7dp"
+            android:paddingHorizontal="7dp"
             android:text="Loading"
             android:textColor="@android:color/white"
             android:textSize="@dimen/normalEmblemTypeTextSize"
             android:textStyle="bold" />
-
         <ImageView
             android:id="@+id/rotate_hint"
             android:layout_width="40dp"
-            android:layout_height="50dp"
+            android:alpha="0"
+            android:translationX="-20dp"
+            android:layout_height="40dp"
             android:layout_gravity="right"
-            android:layout_marginRight="20dp"
+            android:layout_marginRight="25dp"
             android:scaleType="fitCenter"
             android:tint="@android:color/white"
-            app:srcCompat="@drawable/rotate" />
+            app:srcCompat="@drawable/tap" />
+
     </LinearLayout>
 
     <LinearLayout

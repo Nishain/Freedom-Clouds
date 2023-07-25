@@ -78,7 +78,7 @@ public class OpenGLScreen extends GLSurfaceView {
                 this.autoRotate = false;
                 this.downY = y;
                 this.downX = x;
-                idleAnimator.end();
+                idleAnimator.cancel();
                 idleHandler.removeCallbacksAndMessages(null);
                 handler.removeCallbacksAndMessages(null);
                 if(!isGiftRenderer && activity.quoteHandler != null) {
@@ -110,23 +110,7 @@ public class OpenGLScreen extends GLSurfaceView {
 
                 float dx = x - previousX;
                 float dy = y - previousY;
-//                float factorX = 1.0f;
-//                float factorY = -1.0f;
-                // reverse direction of rotation above the mid-line
-//                if (y > getHeight() / 2) {
-//                    dx = dx * -1 ;
-//                }
-//                if(Math.abs(dx) < 10)
-//                    return true;
-                // reverse direction of rotation to left of the mid-line
-//                if (y > getHeight() / 2) {
-//                    factorY = 1.0f;
-//                    //dy = dy * -1 ;
-//                }
-//                if (x < getWidth() / 2) {
-//                    factorX = -1.0f;
-//                    //dy = dy * -1 ;
-//                }
+
                 if((int) (dx * TOUCH_SCALE_FACTOR) == 0 && (int)(dy * TOUCH_SCALE_FACTOR) == 0) {
                     if(!needToPlayEmblemSound) {
                         needToPlayEmblemSound = true;
@@ -152,9 +136,7 @@ public class OpenGLScreen extends GLSurfaceView {
                             customRenderer.getAngleY() +
                                     ((dy) * TOUCH_SCALE_FACTOR));
                 }
-//                customRenderer.setAngle(
-//                        customRenderer.getAngle() +
-//                                ((dx + dy) * TOUCH_SCALE_FACTOR));
+
                 requestRender();
                 break;
         }
