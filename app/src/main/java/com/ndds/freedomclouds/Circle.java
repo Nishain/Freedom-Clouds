@@ -1,17 +1,10 @@
 package com.ndds.freedomclouds;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
-import java.util.ArrayList;
-
-import javax.microedition.khronos.opengles.GL10;
 
 public class Circle {
 
@@ -140,7 +133,8 @@ public class Circle {
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
     private int vPMatrixHandle;
     float[] color = { 1.0f, 1.0f, 1.0f, 1.0f };
-    public void draw(float[] mvpMatrix) {
+    float[] brightnessBlendColor = { 1f, 1f, 1f, 1.0f };
+    public void draw(float[] mvpMatrix, float brightnessFactor) {
         GLES20.glUseProgram(mProgram);
 
         // get handle to vertex shader's vPosition member
@@ -159,6 +153,10 @@ public class Circle {
         GLES20.glUniform1f(isTextureHandle,0.0f);
         colorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
 
+        int colorHandle2 = GLES20.glGetUniformLocation(mProgram, "vColor2");
+        brightnessBlendColor[0] = brightnessFactor;
+        brightnessBlendColor[1] = brightnessFactor;
+        GLES20.glUniform4fv(colorHandle2, 1, brightnessBlendColor, 0);
 
         // Set color for drawing the triangle
         GLES20.glUniform4fv(colorHandle, 1, color, 0);
@@ -169,7 +167,7 @@ public class Circle {
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(positionHandle);
     }
-    public void draw(float[] mvpMatrix,int texture1,int texture2,float blendFactor) {
+    public void draw(float[] mvpMatrix,int texture1,int texture2,float blendFactor, float brightnessFactor) {
         // Add program to OpenGL ES environment
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
         GLES20.glUseProgram(mProgram);
@@ -204,6 +202,12 @@ public class Circle {
 
         colorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
         GLES20.glUniform4fv(colorHandle, 1, color, 0);
+
+        int colorHandle2 = GLES20.glGetUniformLocation(mProgram, "vColor2");
+        brightnessBlendColor[0] = brightnessFactor;
+        brightnessBlendColor[1] = brightnessFactor;
+        GLES20.glUniform4fv(colorHandle2, 1, brightnessBlendColor, 0);
+
         GLES20.glUniform1f(isTextureHandle,1.0f);
 
         // Enable a handle to the triangle vertices

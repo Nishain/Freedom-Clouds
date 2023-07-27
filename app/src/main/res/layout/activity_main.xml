@@ -9,7 +9,12 @@
     android:id="@+id/root"
     tools:context=".MainActivity">
 
-
+    <com.ndds.freedomclouds.BackgroundImage
+        android:id="@+id/wood_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/wood"
+        android:scaleType="fitXY" />
     <LinearLayout
         android:id="@+id/emblem_loading_indicator"
         android:layout_width="wrap_content"
@@ -82,16 +87,17 @@
             android:textColor="@android:color/white"
             android:textSize="@dimen/normalEmblemTypeTextSize"
             android:textStyle="bold" />
+
         <ImageView
             android:id="@+id/rotate_hint"
             android:layout_width="40dp"
-            android:alpha="0"
-            android:translationX="-20dp"
             android:layout_height="40dp"
             android:layout_gravity="right"
             android:layout_marginRight="25dp"
+            android:alpha="0"
             android:scaleType="fitCenter"
             android:tint="@android:color/white"
+            android:translationX="-20dp"
             app:srcCompat="@drawable/tap" />
 
     </LinearLayout>

@@ -90,7 +90,8 @@ public class Cylinder {
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
     private int vPMatrixHandle;
     float[] color = { 1.0f, 0.64705882f, 0.0f, 1.0f };
-    public void draw(float[] mvpMatrix) {
+    float[] brightnessBlendColor = { 1f, 1f, 1f, 1.0f };
+    public void draw(float[] mvpMatrix, float brightnessFactor) {
         // Add program to OpenGL ES environment
         GLES20.glUseProgram(mProgram);
 
@@ -110,6 +111,11 @@ public class Cylinder {
         GLES20.glUniform1f(isTextureHandle,0.0f);
         colorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
 
+
+        int colorHandle2 = GLES20.glGetUniformLocation(mProgram, "vColor2");
+        brightnessBlendColor[0] = brightnessFactor;
+        brightnessBlendColor[1] = brightnessFactor;
+        GLES20.glUniform4fv(colorHandle2, 1, brightnessBlendColor, 0);
 
         // Set color for drawing the triangle
         GLES20.glUniform4fv(colorHandle, 1, color, 0);

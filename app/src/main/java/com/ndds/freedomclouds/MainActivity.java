@@ -2,9 +2,7 @@ package com.ndds.freedomclouds;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
-import android.animation.TimeInterpolator;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -16,8 +14,15 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.PixelFormat;
+import android.graphics.PorterDuff;
 import android.graphics.Typeface;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -26,11 +31,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.method.LinkMovementMethod;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
@@ -60,6 +65,9 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
     private SoundPool soundPool;
     public Handler quoteHandler =  null;
     private MediaPlayer emblemRotateSound;
+    private BackgroundImage backgroundImage;
+    private boolean isBright = true;
+
 
     class FiddleHintAnimationListener extends AnimatorListenerAdapter {
         ObjectAnimator moveAnimator;
@@ -127,6 +135,8 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         openGLScreen.setIdleHandler(idleHandler,rotateHintAnimator);
         openGLScreen.getHolder().setFormat(PixelFormat.TRANSPARENT);
         openGLScreen.setZOrderOnTop(true);
+        backgroundImage = findViewById(R.id.wood_image);
+        setupLightSensor();
     }
 
 
@@ -262,6 +272,37 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
             }
         },5000);
     }
+
+    private void setupLightSensor() {
+        SensorManager mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        Sensor mLightSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+
+        // Implement a listener to receive updates
+        SensorEventListener listener = new SensorEventListener() {
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+            }
+
+            @Override
+            public void onSensorChanged(SensorEvent event) {
+                boolean newIsBright = event.values[0] > 15;
+                if (isBright != newIsBright) {
+                    playSound(R.raw.light_switch);
+                    isBright = newIsBright;
+                    openGLScreen.setBrightnessFactor(isBright ? 1 : 0.5f);
+                    backgroundImage.switchLight(isBright);
+                }
+            }
+        };
+
+        // Register the listener with the light sensor -- choosing
+        // one of the SensorManager.SENSOR_DELAY_* constants.
+        mSensorManager.registerListener(
+                listener, mLightSensor, SensorManager.SENSOR_DELAY_UI);
+    }
+
     public void showCalender(){
         Calendar calendar =  Calendar.getInstance();
         DatePickerDialog datePickerDialog = new DatePickerDialog(this,this,calendar.get(Calendar.YEAR),calendar.get(Calendar.MONTH),calendar.get(Calendar.DAY_OF_MONTH));

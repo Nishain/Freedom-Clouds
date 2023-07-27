@@ -87,9 +87,10 @@ class CustomRenderer implements GLSurfaceView.Renderer {
                     "uniform float textured;" +
                     "uniform float textureMix;" +
                     "uniform vec4 vColor;" +
+                    "uniform vec4 vColor2;" +
 //                    "uniform vec4 vColor;" +
                     "void main() {" +
-                    "  gl_FragColor = vColor * mix(vec4(1.0), mix(texture2D(uTexture, vTexPosition),texture2D(uTexture2, vTexPosition),textureMix), textured);" +//texture2D(uTexture, vTexPosition);,  vColor;
+                    "  gl_FragColor = vColor2 * vColor * mix(vec4(1.0), mix(texture2D(uTexture, vTexPosition),texture2D(uTexture2, vTexPosition),textureMix), textured);" +//texture2D(uTexture, vTexPosition);,  vColor;
                     "}";
 
     private Circle textureCircle1;
@@ -395,6 +396,7 @@ class CustomRenderer implements GLSurfaceView.Renderer {
     }
 
     float blendFactor = 0.0f;
+    float brightnessFactor = 1f;
     int doGlow = 0;
     float quickSpinAngle = 0;
     int currentN = -1;
@@ -485,18 +487,18 @@ class CustomRenderer implements GLSurfaceView.Renderer {
             currentN = k % emblemCount;
         }
         if (quickSpinAngle > 0 || doGlow != 0)
-            textureCircle1.draw(scratch, textures[2 + Math.abs(n % emblemCount)], textures[1], blendFactor);
+            textureCircle1.draw(scratch, textures[2 + Math.abs(n % emblemCount)], textures[1], blendFactor, brightnessFactor);
         else
-            textureCircle1.draw(scratch, textures[2 + Math.abs(n % emblemCount)], textures[2 + Math.abs((n + 1) % emblemCount)], calculateTransitionFadeFactor(Math.abs(mAngleX) % 360));
-        cylinder.draw(scratch);
-        textureCircle2.draw(scratch, textures[0], -99, 0);
+            textureCircle1.draw(scratch, textures[2 + Math.abs(n % emblemCount)], textures[2 + Math.abs((n + 1) % emblemCount)], calculateTransitionFadeFactor(Math.abs(mAngleX) % 360), brightnessFactor);
+        cylinder.draw(scratch, brightnessFactor);
+        textureCircle2.draw(scratch, textures[0], -99, 0, brightnessFactor);
         Matrix.translateM(outlineTranslator, 0, 0, 0, 0.5f);
         Matrix.multiplyMM(scratch, 0, outlineTranslator, 0, scratch, 0);
         //Matrix.multiplyMM(scratch, 0, outlineTranslator, 0, scratch, 0);
         GLES20.glUniformMatrix4fv(vPMatrixHandle, 1, false, scratch, 0);
-        outlineCircle1.draw(scratch);
-        cylinder2.draw(scratch);
-        outlineCircle2.draw(scratch);
+        outlineCircle1.draw(scratch, brightnessFactor);
+        cylinder2.draw(scratch, brightnessFactor);
+        outlineCircle2.draw(scratch, brightnessFactor);
 
     }
 

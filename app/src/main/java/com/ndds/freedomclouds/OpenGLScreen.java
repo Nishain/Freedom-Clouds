@@ -24,6 +24,12 @@ public class OpenGLScreen extends GLSurfaceView {
         setEGLContextClientVersion(2);
 
     }
+
+    public void setBrightnessFactor(float factor) {
+        customRenderer.brightnessFactor = factor;
+        requestRender();
+    }
+
     @SuppressWarnings("unchecked")
     public void initRenderer(Context context, Object ... rendererParams){
         isGiftRenderer = getTag().equals("2");
