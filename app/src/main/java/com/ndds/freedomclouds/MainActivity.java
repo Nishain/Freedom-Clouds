@@ -25,6 +25,7 @@ import android.media.SoundPool;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.method.LinkMovementMethod;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
@@ -179,7 +180,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         }
     }
 
-    private static final String START_TIME = "startTime";
+    static final String START_TIME = "startTime";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -289,7 +290,11 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         settingsView.findViewById(R.id.reset_memory).setOnClickListener(this);
         settingsView.findViewById(R.id.restart_app).setOnClickListener(this);
         settingsView.findViewById(R.id.settings_dismiss).setOnClickListener(this);
-        settingsAlert = new AlertDialog.Builder(this).setView(settingsView).create();
+        TextView privacyNotice = settingsView.findViewById(R.id.privacy_policy);
+        privacyNotice.setText(new PrivacyPolicyText(this));
+        privacyNotice.setMovementMethod(LinkMovementMethod.getInstance());
+
+        settingsAlert = new AlertDialog.Builder(this, R.style.SettingsAlert).setView(settingsView).create();
         settingsAlert.show();
         playSound(R.raw.paper_flip);
     }
@@ -358,8 +363,10 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                 }
                 v.setBackgroundResource(R.drawable.round_beauty_orange);
                 ((Button)v).setText("Are you sure ? (yes)");
+                break;
             case R.id.restart_app:
                 restartApp();
+                break;
             case  R.id.settings_dismiss:
                 settingsAlert.dismiss();
         }

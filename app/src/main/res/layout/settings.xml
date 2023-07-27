@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center"
+    android:background="@drawable/round_border"
     android:orientation="vertical"
     android:padding="20dp">
 
@@ -108,4 +109,16 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:text="(if something fishy happens)" />
+
+    <TextView
+        android:id="@+id/privacy_policy"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:clickable="true"
+        android:gravity="center"
+        android:linksClickable="true"
+        android:text="By using this app you agree to our "
+        android:textColor="@android:color/black"
+        android:textColorLink="#FF9800" />
 </LinearLayout>

@@ -6,4 +6,5 @@
     <color name="beautyGreen">#08FD29</color>
     <color name="beautyBlue">#0AD0F8</color>
     <color name="beautyOrange">#FF9800</color>
+    <color name="transparentBlack">#80000000</color>
 </resources>

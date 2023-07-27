@@ -29,6 +29,17 @@
             android:textColor="@android:color/white"
             android:textSize="24sp"
             android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/privacy_policy"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:linksClickable="true"
+            android:text="By using this app you agree to our privacy policy"
+            android:textColor="@android:color/white"
+            android:textColorLink="@color/beautyGreen"
+            android:visibility="invisible" />
     </LinearLayout>
 
 </FrameLayout>
