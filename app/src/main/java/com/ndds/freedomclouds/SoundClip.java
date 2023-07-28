@@ -15,7 +15,29 @@ public class SoundClip {
 
     SoundClip(Activity context) {
         this.context = context;
-        initSoundPool();
+        AudioAttributes attributes;
+        emblemRotateSound = MediaPlayer.create(context, R.raw.rotation);
+        emblemRotateSound.setLooping(true);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            attributes = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .build();
+            soundPool = new SoundPool.Builder()
+                    .setAudioAttributes(attributes)
+                    .setMaxStreams(1)
+                    .build();
+
+            emblemRotateSound.setAudioAttributes(
+                    new AudioAttributes.Builder()
+                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                            .setUsage(AudioAttributes.USAGE_MEDIA)
+                            .build()
+            );
+        } else {
+            soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC,0);
+            emblemRotateSound.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        }
     }
 
     public void pauseEmblemSound(){
@@ -40,33 +62,7 @@ public class SoundClip {
         });
 
     }
-    private void initSoundPool(){
-        AudioAttributes attributes;
 
-        emblemRotateSound = MediaPlayer.create(context, R.raw.rotation);
-        emblemRotateSound.setLooping(true);
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            attributes = new AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                    .build();
-            soundPool = new SoundPool.Builder()
-                    .setAudioAttributes(attributes)
-                    .setMaxStreams(1)
-                    .build();
-
-            emblemRotateSound.setAudioAttributes(
-                    new AudioAttributes.Builder()
-                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                            .setUsage(AudioAttributes.USAGE_MEDIA)
-                            .build()
-            );
-        } else {
-            soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC,0);
-            emblemRotateSound.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        }
-
-    }
     public void playSound(int id){
         int soundId = soundPool.load(context, id, 1);
         soundPool.setOnLoadCompleteListener((soundPool, sampleId, status) -> soundPool.play(soundId, 1, 1, 1, 0, 1));

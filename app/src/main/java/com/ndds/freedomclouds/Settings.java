@@ -29,7 +29,7 @@ public class Settings implements DatePickerDialog.OnDateSetListener {
         this.sharedPreferences = sharedPreferences;
     }
 
-    private void changeDate(View v) {
+    private void changeDate() {
         Calendar calendar = Calendar.getInstance();
         DatePickerDialog datePickerDialog = new DatePickerDialog(activity,this,calendar.get(Calendar.YEAR),calendar.get(Calendar.MONTH),calendar.get(Calendar.DAY_OF_MONTH));
         datePickerDialog.show();
@@ -49,8 +49,9 @@ public class Settings implements DatePickerDialog.OnDateSetListener {
         activity.startActivity(mainIntent);
     }
 
-    private void resetApp(View v) {
-        if(((Button)v).getText().toString().contains("Are you sure ?")){
+    private void resetApp() {
+        Button v = settingsView.findViewById(R.id.reset_memory);
+        if(v.getText().toString().contains("Are you sure ?")){
             dialog.dismiss();
             sharedPreferences.edit().remove(MainActivity.START_TIME).apply();
             Toast.makeText(activity, "restarting the app", Toast.LENGTH_SHORT).show();
@@ -73,16 +74,6 @@ public class Settings implements DatePickerDialog.OnDateSetListener {
         });
     }
 
-    private void setListener(int id, Consumer<View> consumer) {
-        settingsView.findViewById(id).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (id != R.id.reset_memory)
-                    dialog.dismiss();
-                consumer.accept(v);
-            }
-        });
-    }
 
     private void openDeveloperNote() {
         ViewGroup viewGroup = (ViewGroup) activity.getLayoutInflater().inflate(R.layout.developer_note,null);
