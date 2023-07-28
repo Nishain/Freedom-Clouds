@@ -1,45 +1,24 @@
 package com.ndds.freedomclouds;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
-import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
-import android.content.ComponentName;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.graphics.PixelFormat;
-import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.media.AudioAttributes;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.media.SoundPool;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.text.method.LinkMovementMethod;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -54,61 +33,24 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Objects;
 
-public class MainActivity extends AppCompatActivity implements DatePickerDialog.OnDateSetListener, View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements MainActivityCallback {
 
     private OpenGLScreen openGLScreen;
     private Handler idleHandler;
     private ObjectAnimator rotateHintAnimator;
-    private long startTime = 0;
     SharedPreferences sharedPreferences;
-    private AlertDialog settingsAlert;
-    private SoundPool soundPool;
-    public Handler quoteHandler =  null;
-    private MediaPlayer emblemRotateSound;
     private BackgroundImage backgroundImage;
     private boolean isBright = true;
-
-
-    class FiddleHintAnimationListener extends AnimatorListenerAdapter {
-        ObjectAnimator moveAnimator;
-        View view;
-
-        FiddleHintAnimationListener(View v) {
-            view = v;
-        }
-        @Override
-        public void onAnimationCancel(Animator animation) {
-            super.onAnimationCancel(animation);
-            if (moveAnimator != null)
-                moveAnimator.cancel();
-        }
-
-        @Override
-        public void onAnimationEnd(Animator animation) {
-            super.onAnimationEnd(animation);
-            moveAnimator = ObjectAnimator.ofFloat(view, "translationX", -20   , 20);
-            moveAnimator.setRepeatCount(4);
-            moveAnimator.setDuration(500);
-            moveAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
-            moveAnimator.setRepeatMode(ValueAnimator.REVERSE);
-            moveAnimator.start();
-            moveAnimator.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    super.onAnimationEnd(animation);
-                    ObjectAnimator.ofFloat(view, "alpha", 1, 0).start();
-                }
-            });
-        }
-    }
+    public SoundClip audio;
+    private Settings settings;
+    public QuotesMaker quotesMaker;
 
     private void initOpenGL(int tag){
-
         ViewGroup view = (ViewGroup)getLayoutInflater().inflate(R.layout.opengl_layout, null);
 
         (view.getChildAt(0)).setTag(String.valueOf(tag));
         ((ViewGroup)findViewById(R.id.root)).addView(view, 0);
-        ArrayList<Bitmap> bitmaps = null;
+        ArrayList<Bitmap> bitmaps;
         openGLScreen = findViewById(R.id.gl_screen);
         if(String.valueOf(tag).equals("1")) {
             bitmaps = new ArrayList<>();
@@ -139,47 +81,9 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         setupLightSensor();
     }
 
-
-    public void pauseEmblemSound(){
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                emblemRotateSound.pause();
-            }
-        });
-    }
-    public void playEmblemSound(){
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                emblemRotateSound.start();
-            }
-        });
-
-    }
-    private void initSoundPool(){
-        AudioAttributes attributes = null;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            attributes = new AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                    .build();
-            soundPool = new SoundPool.Builder()
-                    .setAudioAttributes(attributes)
-                    .setMaxStreams(1)
-                    .build();
-        }else {
-            soundPool = new SoundPool(1,AudioManager.STREAM_MUSIC,0);
-        }
-    }
-    public void playSound(int id){
-        int soundId = soundPool.load(this,id, 1);
-        soundPool.setOnLoadCompleteListener((soundPool, sampleId, status) -> soundPool.play(soundId, 1, 1, 1, 0, 1));
-    }
-
     @Override
     public void finish() {
-        soundPool.release();
+        audio.release();
         super.finish();
     }
 
@@ -202,66 +106,26 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                 R.id.emblemType,
                 R.id.remaining_7_days_txt,
                 R.id.remaining_30_days_txt,
-                R.id.startDateTxt,
-//                R.id.dayCount,
+                R.id.startDateTxt
         });
-
-        initSoundPool();
-        emblemRotateSound = MediaPlayer.create(this,R.raw.rotation);
-
-        emblemRotateSound.setLooping(true);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            emblemRotateSound.setAudioAttributes(
-                    new AudioAttributes.Builder()
-                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                            .setUsage(AudioAttributes.USAGE_MEDIA)
-                            .build()
-            );
-        }else
-            emblemRotateSound.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
         findViewById(R.id.emblem_loading_indicator).setVisibility(View.GONE);
         sharedPreferences = getSharedPreferences("configuration",MODE_PRIVATE);
+        settings = new Settings(this, sharedPreferences);
+        audio = new SoundClip(this);
         if(sharedPreferences.contains(START_TIME)){
             String[] dateComponents = sharedPreferences.getString(START_TIME,"").split("/");
             int year = Integer.parseInt(dateComponents[0]);
             int month = Integer.parseInt(dateComponents[1]);
             int dayOfMonth = Integer.parseInt(dateComponents[2]);
-            updateDate(year,month,dayOfMonth,false);
+            showDate(year, month, dayOfMonth);
         }
-        Animation slideUpAnimation = AnimationUtils.loadAnimation(this,R.anim.push_up_anim);
-        View splashOverlay = findViewById(R.id.splash_overlay);
-        splashOverlay.setVisibility(View.VISIBLE);
+        quotesMaker = new QuotesMaker(this);
+        new CurtainAnimation(this, sharedPreferences).startAnimate();
 
-        slideUpAnimation.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                splashOverlay.setVisibility(View.GONE);
-
-                if(!sharedPreferences.contains(START_TIME)) {
-                    ((TextView) findViewById(R.id.emblemType)).setText("The Gift");
-                    initOpenGL(2);
-                    showInstruction();
-                }else {
-                    initOpenGL(1);
-                    generateRandomQuote();
-                }
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        });
-        findViewById(R.id.splash_overlay).startAnimation(slideUpAnimation);
         View v = findViewById(R.id.rotate_hint);
         rotateHintAnimator = ObjectAnimator.ofFloat(v, "alpha", 0, 1);
-        rotateHintAnimator.addListener(new FiddleHintAnimationListener(v));
+        rotateHintAnimator.addListener(new HintAnimationHandler(v));
 
         idleHandler = new Handler();
         idleHandler.postDelayed(new Runnable() {
@@ -289,7 +153,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
             public void onSensorChanged(SensorEvent event) {
                 boolean newIsBright = event.values[0] > 15;
                 if (isBright != newIsBright) {
-                    playSound(R.raw.light_switch);
+                    audio.playSound(R.raw.light_switch);
                     isBright = newIsBright;
                     openGLScreen.setBrightnessFactor(isBright ? 1 : 0.5f);
                     backgroundImage.switchLight(isBright);
@@ -305,14 +169,16 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
     public void showCalender(){
         Calendar calendar =  Calendar.getInstance();
-        DatePickerDialog datePickerDialog = new DatePickerDialog(this,this,calendar.get(Calendar.YEAR),calendar.get(Calendar.MONTH),calendar.get(Calendar.DAY_OF_MONTH));
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this,settings,calendar.get(Calendar.YEAR),calendar.get(Calendar.MONTH),calendar.get(Calendar.DAY_OF_MONTH));
         datePickerDialog.setTitle("Select a starting date");
         datePickerDialog.show();
     }
+
     public void glow(View v){
         openGLScreen.glow();
-        playSound(R.raw.magical);
+        audio.playSound(R.raw.magical);
     }
+
     public void setEmblemTypeText(String text){
         runOnUiThread(new Runnable() {
             @Override
@@ -322,38 +188,20 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
             }
         });
     }
+
     public void showSettings(View v){
-        ViewGroup settingsView = (ViewGroup)getLayoutInflater().inflate(R.layout.settings,null);
-
-        settingsView.findViewById(R.id.settings_change_date).setOnClickListener(this);
-        settingsView.findViewById(R.id.settings_reset_today).setOnClickListener(this);
-        settingsView.findViewById(R.id.settings_developer_notice).setOnClickListener(this);
-        settingsView.findViewById(R.id.reset_memory).setOnClickListener(this);
-        settingsView.findViewById(R.id.restart_app).setOnClickListener(this);
-        settingsView.findViewById(R.id.settings_dismiss).setOnClickListener(this);
-        TextView privacyNotice = settingsView.findViewById(R.id.privacy_policy);
-        privacyNotice.setText(new PrivacyPolicyText(this));
-        privacyNotice.setMovementMethod(LinkMovementMethod.getInstance());
-
-        settingsAlert = new AlertDialog.Builder(this, R.style.SettingsAlert).setView(settingsView).create();
-        settingsAlert.show();
-        playSound(R.raw.paper_flip);
-    }
-
-    @Override
-    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-        updateDate(year,month,dayOfMonth,true);
+        settings.show();
     }
 
     @SuppressLint("DefaultLocale")
-    private void updateDate(int year, int month, int dayOfMonth,boolean doSave){
+    public Boolean showDate(int year, int month, int dayOfMonth) {
         Calendar editedCalender = Calendar.getInstance();
         editedCalender.set(year,month,dayOfMonth);
         Calendar currentCalender = Calendar.getInstance();
         int days = (int) ((currentCalender.getTime().getTime() - editedCalender.getTime().getTime()) / (1000 * 60 * 60 * 24));
         if(days < 0){
             Toast.makeText(this, "Can only enter a date on or before today's date", Toast.LENGTH_LONG).show();
-            return;
+            return true;
         }
         ((ProgressBar) findViewById(R.id.weekDaysProgress)).setProgress(days % 7);
         ProgressBar daysInMonthProgress = findViewById(R.id.monthDaysProgress);
@@ -363,63 +211,13 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         ((TextView)findViewById(R.id.startDateTxt)).setText(String.format("Since %d/%d/%d",dayOfMonth,month+1,year));
         ((TextView)findViewById(R.id.remaining_7_days_txt)).setText(String.format("%s %s",getString(R.string.days_completed_in_week), days % 7+"/7"));
         ((TextView)findViewById(R.id.remaining_30_days_txt)).setText(String.format("%s %s",getString(R.string._30_days_progress), days % 30+"/30"));
-        startTime = editedCalender.getTime().getTime();
-        if(doSave)
-            sharedPreferences.edit().putString(START_TIME,String.format("%d/%d/%d",year,month,dayOfMonth)).apply();
-    }
-    @Override
-    public void onClick(View v) {
-        if(v.getId() != R.id.reset_memory)
-            settingsAlert.dismiss();
-        switch (v.getId()){
-            case R.id.settings_change_date:
-                Calendar calendar = Calendar.getInstance();
-                DatePickerDialog datePickerDialog = new DatePickerDialog(this,this,calendar.get(Calendar.YEAR),calendar.get(Calendar.MONTH),calendar.get(Calendar.DAY_OF_MONTH));
-                datePickerDialog.show();
-                break;
-            case R.id.settings_reset_today:
-                Calendar now = Calendar.getInstance();
-                updateDate(now.get(Calendar.YEAR),now.get(Calendar.MONTH),now.get(Calendar.DAY_OF_MONTH),true);
-                break;
-            case R.id.settings_developer_notice:
-                ViewGroup viewGroup = (ViewGroup) getLayoutInflater().inflate(R.layout.developer_note,null);
-                AssetManager assetManager = getAssets();
-                for (int i = 0; i < viewGroup.getChildCount(); i++) {
-                    View view = viewGroup.getChildAt(i);
-                    if(view instanceof TextView && !(view instanceof Button))
-                        ((TextView) view).setTypeface(Typeface.createFromAsset(assetManager,"fonts/CherrySwash-Regular.ttf"));
-                }
-                AlertDialog noteAlert = new AlertDialog.Builder(this).setView(viewGroup).create();
-                viewGroup.findViewById(R.id.developer_note_ok).setOnClickListener(v1 -> noteAlert.dismiss());
-                noteAlert.show();
-                playSound(R.raw.paper_flip);
-                break;
-            case  R.id.reset_memory:
-                if(((Button)v).getText().toString().contains("Are you sure ?")){
-                    settingsAlert.dismiss();
-                    sharedPreferences.edit().remove(START_TIME).apply();
-                    Toast.makeText(this, "restarting the app", Toast.LENGTH_SHORT).show();
-                    restartApp();
-                    return;
-                }
-                v.setBackgroundResource(R.drawable.round_beauty_orange);
-                ((Button)v).setText("Are you sure ? (yes)");
-                break;
-            case R.id.restart_app:
-                restartApp();
-                break;
-            case  R.id.settings_dismiss:
-                settingsAlert.dismiss();
-        }
+        return false;
     }
 
-    private void restartApp() {
-        PackageManager packageManager = getPackageManager();
-        Intent intent = packageManager.getLaunchIntentForPackage(getPackageName());
-        ComponentName componentName = intent.getComponent();
-        Intent mainIntent = Intent.makeRestartActivityTask(componentName);
-        finish();
-        startActivity(mainIntent);
+    @SuppressLint("DefaultLocale")
+    public void updateDate(int year, int month, int dayOfMonth){
+        if(showDate(year, month, dayOfMonth)) return;
+        sharedPreferences.edit().putString(START_TIME,String.format("%d/%d/%d",year,month,dayOfMonth)).apply();
     }
 
     public void unwrapGift(){
@@ -442,32 +240,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
             }
         });
     }
-    public void generateRandomQuote(){
-        if(quoteHandler == null)
-            quoteHandler = new Handler();
-        else {
-            quoteHandler.removeCallbacksAndMessages(null);
-            quoteHandler = null;
-        }
-        quoteHandler.postDelayed(() -> runOnUiThread(() -> {
-            ArrayList<String> quotesArrayList = new ArrayList<>();
-            try {
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(getAssets().open("quotes.txt")));
-                String quote = bufferedReader.readLine();
-                while (quote != null){
-                    quotesArrayList.add(quote);
-                    quote = bufferedReader.readLine();
-                }
-                String[] quotes = quotesArrayList.toArray(new String[0]);
-                String randomQuote = quotes[(int) (Math.random() * quotes.length)];
 
-                ((TextView)findViewById(R.id.emblemType)).setTextSize(TypedValue.COMPLEX_UNIT_PX,getResources().getDimensionPixelSize(R.dimen.quoteTextSize));
-                ((TextView)findViewById(R.id.emblemType)).setText(randomQuote);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }),1500);
-    }
     private void showInstruction(){
         ViewGroup viewGroup = (ViewGroup) getLayoutInflater().inflate(R.layout.introduction,null);
 
@@ -482,7 +255,18 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
             }
         });
         alertDialog.show();
-        playSound(R.raw.paper_flip);
+        audio.playSound(R.raw.paper_flip);
     }
 
+    @Override
+    public void openCurtain(Boolean isNewUser) {
+        if(isNewUser) {
+            ((TextView) findViewById(R.id.emblemType)).setText("The Gift");
+            initOpenGL(2);
+            showInstruction();
+        } else {
+            initOpenGL(1);
+            quotesMaker.generateRandomQuote();
+        }
+    }
 }

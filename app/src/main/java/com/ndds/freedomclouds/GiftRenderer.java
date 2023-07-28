@@ -138,16 +138,16 @@ class GiftRenderer extends CustomRenderer implements GLSurfaceView.Renderer {
         int vPMatrixHandle = GLES20.glGetUniformLocation(program, "uMVPMatrix");
         // Pass the projection and view transformation to the shader
         GLES20.glUniformMatrix4fv(vPMatrixHandle, 1, false, scratch, 0);
-        cylinder.draw(scratch, brightnessFactor);
-        mSquare.draw(scratch, textures[1], -99, 0, brightnessFactor);
-        mSquare2.draw(scratch, textures[0], -99, 0, brightnessFactor);
+        cylinder.draw(brightnessFactor);
+        mSquare.draw(textures[1], -99, 0, brightnessFactor);
+        mSquare2.draw(textures[0], -99, 0, brightnessFactor);
         Matrix.translateM(outlineTranslator, 0, 0, 0, 0.5f);
         Matrix.multiplyMM(scratch, 0, outlineTranslator, 0, scratch, 0);
         //Matrix.multiplyMM(scratch, 0, outlineTranslator, 0, scratch, 0);
         GLES20.glUniformMatrix4fv(vPMatrixHandle, 1, false, scratch, 0);
-        mSquare1Outline.draw(scratch, brightnessFactor);
-        cylinder2.draw(scratch, brightnessFactor);
-        mSquare2Outline.draw(scratch, brightnessFactor);
+        mSquare1Outline.draw(brightnessFactor);
+        cylinder2.draw(brightnessFactor);
+        mSquare2Outline.draw(brightnessFactor);
         if (Math.abs(mAngle) > 715 && !isUnwrap) {
             isUnwrap = true;
             surfaceView.activity.unwrapGift();

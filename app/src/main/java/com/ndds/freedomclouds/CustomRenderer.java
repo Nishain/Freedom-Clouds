@@ -87,10 +87,9 @@ class CustomRenderer implements GLSurfaceView.Renderer {
                     "uniform float textured;" +
                     "uniform float textureMix;" +
                     "uniform vec4 vColor;" +
-                    "uniform vec4 vColor2;" +
 //                    "uniform vec4 vColor;" +
                     "void main() {" +
-                    "  gl_FragColor = vColor2 * vColor * mix(vec4(1.0), mix(texture2D(uTexture, vTexPosition),texture2D(uTexture2, vTexPosition),textureMix), textured);" +//texture2D(uTexture, vTexPosition);,  vColor;
+                    "  gl_FragColor = vColor * mix(vec4(1.0), mix(texture2D(uTexture, vTexPosition),texture2D(uTexture2, vTexPosition),textureMix), textured);" +//texture2D(uTexture, vTexPosition);,  vColor;
                     "}";
 
     private Circle textureCircle1;
@@ -108,7 +107,7 @@ class CustomRenderer implements GLSurfaceView.Renderer {
         return shader;
     }
 
-    private int textures[];
+    private int[] textures;
 
     private Bitmap flipImage(Bitmap bitmap) {
         android.graphics.Matrix matrix = new android.graphics.Matrix();
@@ -160,15 +159,11 @@ class CustomRenderer implements GLSurfaceView.Renderer {
         if (coefficient == 0 ) return false; // parallel lines
 
         double interceptingX = constant / coefficient;
-        if((Math.min(lineA[1][0],lineA[0][0]) < interceptingX &&
-                Math.max(lineA[1][0],lineA[0][0]) > interceptingX
-         ) && (Math.min(lineB[1][0],lineB[0][0]) < interceptingX &&
-                Math.max(lineB[1][0],lineB[0][0]) > interceptingX
-        )) {
-
-            return true;
-        }
-        else return false;
+        return (Math.min(lineA[1][0], lineA[0][0]) < interceptingX &&
+                Math.max(lineA[1][0], lineA[0][0]) > interceptingX
+        ) && (Math.min(lineB[1][0], lineB[0][0]) < interceptingX &&
+                Math.max(lineB[1][0], lineB[0][0]) > interceptingX
+        );
     }
 
     static class DebugCircle {
@@ -250,8 +245,8 @@ class CustomRenderer implements GLSurfaceView.Renderer {
     }
     private Bitmap drawRandomEmblem(int width,int height) {
         Paint paint = new Paint();
-        Bitmap resutantImage = Bitmap.createBitmap(width,height,Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(resutantImage);
+        Bitmap resultantImage = Bitmap.createBitmap(width,height,Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(resultantImage);
         int radius = height / 2;
         Random r = new Random();
         canvas.drawColor(Color.RED);
@@ -262,7 +257,7 @@ class CustomRenderer implements GLSurfaceView.Renderer {
         ArrayList<LineCoordinate> lineDB = new ArrayList<>();
 
         for (int i = 0; i < 30; i++) {
-            LineCoordinate proposedLine = null;
+            LineCoordinate proposedLine;
 
             if(i == 0) {
                 proposedLine = new LineCoordinate(
@@ -334,7 +329,7 @@ class CustomRenderer implements GLSurfaceView.Renderer {
         debugPaint.setStyle(Paint.Style.FILL);
         debugPaint.setColor(Color.GREEN);
 
-        return resutantImage;
+        return resultantImage;
     }
     private void loadTextures() {
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
@@ -365,9 +360,6 @@ class CustomRenderer implements GLSurfaceView.Renderer {
         outlineCircle2 = new Circle(0.0625f + outlineOffset, program, .5f + outlineOffset);
         cylinder2 = new Cylinder(0.0625f + outlineOffset, program, .5f + outlineOffset);
         cylinder2.color = new float[]{1.0f, 1.0f, 1.0f, 1.0f};
-//        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
-
     }
 
     @Override
@@ -487,18 +479,18 @@ class CustomRenderer implements GLSurfaceView.Renderer {
             currentN = k % emblemCount;
         }
         if (quickSpinAngle > 0 || doGlow != 0)
-            textureCircle1.draw(scratch, textures[2 + Math.abs(n % emblemCount)], textures[1], blendFactor, brightnessFactor);
+            textureCircle1.draw(textures[2 + Math.abs(n % emblemCount)], textures[1], blendFactor, brightnessFactor);
         else
-            textureCircle1.draw(scratch, textures[2 + Math.abs(n % emblemCount)], textures[2 + Math.abs((n + 1) % emblemCount)], calculateTransitionFadeFactor(Math.abs(mAngleX) % 360), brightnessFactor);
-        cylinder.draw(scratch, brightnessFactor);
-        textureCircle2.draw(scratch, textures[0], -99, 0, brightnessFactor);
+            textureCircle1.draw(textures[2 + Math.abs(n % emblemCount)], textures[2 + Math.abs((n + 1) % emblemCount)], calculateTransitionFadeFactor(Math.abs(mAngleX) % 360), brightnessFactor);
+        cylinder.draw(brightnessFactor);
+        textureCircle2.draw(textures[0], -99, 0, brightnessFactor);
         Matrix.translateM(outlineTranslator, 0, 0, 0, 0.5f);
         Matrix.multiplyMM(scratch, 0, outlineTranslator, 0, scratch, 0);
         //Matrix.multiplyMM(scratch, 0, outlineTranslator, 0, scratch, 0);
         GLES20.glUniformMatrix4fv(vPMatrixHandle, 1, false, scratch, 0);
-        outlineCircle1.draw(scratch, brightnessFactor);
-        cylinder2.draw(scratch, brightnessFactor);
-        outlineCircle2.draw(scratch, brightnessFactor);
+        outlineCircle1.draw(brightnessFactor);
+        cylinder2.draw(brightnessFactor);
+        outlineCircle2.draw(brightnessFactor);
 
     }
 

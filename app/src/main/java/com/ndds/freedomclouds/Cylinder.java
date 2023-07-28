@@ -21,40 +21,40 @@ public class Cylinder {
 
     public Cylinder(float depth, int program, float radius) {
         mProgram = program;
-        float[] pos=new float[(360 * 18)];
+        float[] positions = new float[(360 * 18)];
 
         int j = 0;
-        //pos = new float[]{-0.5f, 0.0f,0.0f,0.5f, 0.0f,0.0f,0.0f, 0.5f,0.0f};
+
         for(int i=0;i<360;i+=1){
             j =  18 * i;
 
-            pos[j] = (float) (radius*Math.sin(i*Math.PI/180f));
-            pos[j + 1] = (float) (radius*Math.cos(i*Math.PI/180f));
-            pos[j + 2] = -depth;
+            positions[j] = (float) (radius*Math.sin(i*Math.PI/180f));
+            positions[j + 1] = (float) (radius*Math.cos(i*Math.PI/180f));
+            positions[j + 2] = -depth;
 
-            pos[j + 3] = (float) (radius*Math.sin(i*Math.PI/180f));
-            pos[j + 4] = (float) (radius*Math.cos(i*Math.PI/180f));
-            pos[j + 5] = depth;
+            positions[j + 3] = (float) (radius*Math.sin(i*Math.PI/180f));
+            positions[j + 4] = (float) (radius*Math.cos(i*Math.PI/180f));
+            positions[j + 5] = depth;
 
-            pos[j + 6] = (float) (radius*Math.sin((i+1)*Math.PI/180f));
-            pos[j + 7] = (float) (radius*Math.cos((i+1)*Math.PI/180f));
-            pos[j + 8] = depth;
+            positions[j + 6] = (float) (radius*Math.sin((i+1)*Math.PI/180f));
+            positions[j + 7] = (float) (radius*Math.cos((i+1)*Math.PI/180f));
+            positions[j + 8] = depth;
 
 
-            pos[j + 9] = (float) (radius*Math.sin(i*Math.PI/180f));
-            pos[j + 10] = (float) (radius*Math.cos(i*Math.PI/180f));
-            pos[j + 11] = -depth;
+            positions[j + 9] = (float) (radius*Math.sin(i*Math.PI/180f));
+            positions[j + 10] = (float) (radius*Math.cos(i*Math.PI/180f));
+            positions[j + 11] = -depth;
 
-            pos[j + 12] = (float) (radius*Math.sin((i+1)*Math.PI/180f));
-            pos[j + 13] = (float) (radius*Math.cos((i+1)*Math.PI/180f));
-            pos[j + 14] = -depth;
+            positions[j + 12] = (float) (radius*Math.sin((i+1)*Math.PI/180f));
+            positions[j + 13] = (float) (radius*Math.cos((i+1)*Math.PI/180f));
+            positions[j + 14] = -depth;
 
-            pos[j + 15] = (float) (radius*Math.sin((i+1)*Math.PI/180f));
-            pos[j + 16] = (float) (radius*Math.cos((i + 1)*Math.PI/180f));
-            pos[j + 17] = depth;
+            positions[j + 15] = (float) (radius*Math.sin((i+1)*Math.PI/180f));
+            positions[j + 16] = (float) (radius*Math.cos((i + 1)*Math.PI/180f));
+            positions[j + 17] = depth;
 
         }
-        squareCoords = pos;
+        squareCoords = positions;
 
 
         // initialize vertex byte buffer for shape coordinates
@@ -71,9 +71,6 @@ public class Cylinder {
         int fragmentShader = CustomRenderer.loadShader(GLES20.GL_FRAGMENT_SHADER,
                 CustomRenderer.fragmentShaderCode);
 
-        // create empty OpenGL ES Program
-//        mProgram = GLES20.glCreateProgram();
-
         // add the vertex shader to program
         GLES20.glAttachShader(mProgram, vertexShader);
 
@@ -86,12 +83,10 @@ public class Cylinder {
     private int positionHandle;
     private int colorHandle;
 
-    private final int vertexCount = squareCoords.length / COORDS_PER_VERTEX;
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
-    private int vPMatrixHandle;
     float[] color = { 1.0f, 0.64705882f, 0.0f, 1.0f };
-    float[] brightnessBlendColor = { 1f, 1f, 1f, 1.0f };
-    public void draw(float[] mvpMatrix, float brightnessFactor) {
+
+    public void draw(float brightnessFactor) {
         // Add program to OpenGL ES environment
         GLES20.glUseProgram(mProgram);
 
@@ -111,14 +106,13 @@ public class Cylinder {
         GLES20.glUniform1f(isTextureHandle,0.0f);
         colorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
 
-
-        int colorHandle2 = GLES20.glGetUniformLocation(mProgram, "vColor2");
-        brightnessBlendColor[0] = brightnessFactor;
-        brightnessBlendColor[1] = brightnessFactor;
-        GLES20.glUniform4fv(colorHandle2, 1, brightnessBlendColor, 0);
-
         // Set color for drawing the triangle
-        GLES20.glUniform4fv(colorHandle, 1, color, 0);
+        float[] blendedColor = new float[] {
+                color[0] * brightnessFactor,
+                color[1] * brightnessFactor,
+                color[2], color[3]
+        };
+        GLES20.glUniform4fv(colorHandle, 1, blendedColor, 0);
 
         // Draw the triangle
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, (360 * 6));

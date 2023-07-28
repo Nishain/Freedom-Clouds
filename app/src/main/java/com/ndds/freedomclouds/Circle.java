@@ -21,28 +21,24 @@ public class Circle {
     private int mProgram = 0;
     public Circle(float depth,int program,float radius){
         mProgram = program;
-        float[] pos=new float[(360 * 9)];
+        float[] positions = new float[(360 * 9)];
         int j = 0;
         for(int i=0;i<360;i+=1){
             j =  9 * i;
-            pos[j] = 0.0f;
-            pos[j + 1] = 0.0f;
-            pos[j + 2] = depth;
+            positions[j] = 0.0f;
+            positions[j + 1] = 0.0f;
+            positions[j + 2] = depth;
 
-            pos[j + 3] = (float) (radius*Math.sin(i*Math.PI/180f));
-            pos[j + 4] = (float) (radius*Math.cos(i*Math.PI/180f));
-            pos[j + 5] = depth;
+            positions[j + 3] = (float) (radius*Math.sin(i*Math.PI/180f));
+            positions[j + 4] = (float) (radius*Math.cos(i*Math.PI/180f));
+            positions[j + 5] = depth;
 
-            pos[j + 6] = (float) (radius*Math.sin((i+1)*Math.PI/180f));
-            pos[j + 7] = (float) (radius*Math.cos((i+1)*Math.PI/180f));
-            pos[j + 8] = depth;
+            positions[j + 6] = (float) (radius*Math.sin((i+1)*Math.PI/180f));
+            positions[j + 7] = (float) (radius*Math.cos((i+1)*Math.PI/180f));
+            positions[j + 8] = depth;
         }
-        squareCoords = pos;
+        squareCoords = positions;
 
-//        int[] textures = new int[1];
-//        GLES20.glGenTextures(1, textures, 0);
-//        GLES20.glBindTexture(GL10.GL_TEXTURE_2D, textures[0]);
-//        drawOrder = order;
         // initialize vertex byte buffer for shape coordinates
         ByteBuffer bb = ByteBuffer.allocateDirect(
                 // (# of coordinate values * 4 bytes per float)
@@ -81,10 +77,6 @@ public class Circle {
         }
         squareCoords = pos;
 
-//        int[] textures = new int[1];
-//        GLES20.glGenTextures(1, textures, 0);
-//        GLES20.glBindTexture(GL10.GL_TEXTURE_2D, textures[0]);
-//        drawOrder = order;
         // initialize vertex byte buffer for shape coordinates
         ByteBuffer bb = ByteBuffer.allocateDirect(
                 // (# of coordinate values * 4 bytes per float)
@@ -94,14 +86,6 @@ public class Circle {
         vertexBuffer.put(squareCoords);
         vertexBuffer.position(0);
 
-        // initialize byte buffer for the draw list
-//        ByteBuffer dlb = ByteBuffer.allocateDirect(
-//                // (# of coordinate values * 2 bytes per short)
-//                drawOrder.length * 2);
-//        dlb.order(ByteOrder.nativeOrder());
-//        drawListBuffer = dlb.asShortBuffer();
-//        drawListBuffer.put(drawOrder);
-//        drawListBuffer.position(0);
         bb = ByteBuffer.allocateDirect(textureCood.length * 4);
         bb.order(ByteOrder.nativeOrder());
         textureBuffer = bb.asFloatBuffer();
@@ -113,9 +97,6 @@ public class Circle {
                 CustomRenderer.vertexShaderCode);
         int fragmentShader = CustomRenderer.loadShader(GLES20.GL_FRAGMENT_SHADER,
                 CustomRenderer.fragmentShaderCode);
-
-        // create empty OpenGL ES Program
-//        mProgram = GLES20.glCreateProgram();
 
         // add the vertex shader to program
         GLES20.glAttachShader(mProgram, vertexShader);
@@ -129,12 +110,10 @@ public class Circle {
     private int positionHandle;
     private int colorHandle;
 
-    private final int vertexCount = squareCoords.length / COORDS_PER_VERTEX;
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
-    private int vPMatrixHandle;
     float[] color = { 1.0f, 1.0f, 1.0f, 1.0f };
-    float[] brightnessBlendColor = { 1f, 1f, 1f, 1.0f };
-    public void draw(float[] mvpMatrix, float brightnessFactor) {
+
+    public void draw(float brightnessFactor) {
         GLES20.glUseProgram(mProgram);
 
         // get handle to vertex shader's vPosition member
@@ -153,13 +132,13 @@ public class Circle {
         GLES20.glUniform1f(isTextureHandle,0.0f);
         colorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
 
-        int colorHandle2 = GLES20.glGetUniformLocation(mProgram, "vColor2");
-        brightnessBlendColor[0] = brightnessFactor;
-        brightnessBlendColor[1] = brightnessFactor;
-        GLES20.glUniform4fv(colorHandle2, 1, brightnessBlendColor, 0);
-
         // Set color for drawing the triangle
-        GLES20.glUniform4fv(colorHandle, 1, color, 0);
+        float[] blendedColor = new float[] {
+                color[0] * brightnessFactor,
+                color[1] * brightnessFactor,
+                color[2], color[3]
+        };
+        GLES20.glUniform4fv(colorHandle, 1, blendedColor, 0);
 
         // Draw the triangle
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, (360 * 6));
@@ -167,7 +146,7 @@ public class Circle {
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(positionHandle);
     }
-    public void draw(float[] mvpMatrix,int texture1,int texture2,float blendFactor, float brightnessFactor) {
+    public void draw(int texture1, int texture2, float blendFactor, float brightnessFactor) {
         // Add program to OpenGL ES environment
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
         GLES20.glUseProgram(mProgram);
@@ -201,12 +180,13 @@ public class Circle {
         int isTextureHandle  = GLES20.glGetUniformLocation(mProgram,"textured");
 
         colorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
-        GLES20.glUniform4fv(colorHandle, 1, color, 0);
+        float[] blendedColor = new float[] {
+                color[0] * brightnessFactor,
+                color[1] * brightnessFactor,
+                color[2], color[3]
+        };
 
-        int colorHandle2 = GLES20.glGetUniformLocation(mProgram, "vColor2");
-        brightnessBlendColor[0] = brightnessFactor;
-        brightnessBlendColor[1] = brightnessFactor;
-        GLES20.glUniform4fv(colorHandle2, 1, brightnessBlendColor, 0);
+        GLES20.glUniform4fv(colorHandle, 1, blendedColor, 0);
 
         GLES20.glUniform1f(isTextureHandle,1.0f);
 

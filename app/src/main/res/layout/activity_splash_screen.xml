@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/orange_splash"
-    tools:context=".Splash_Screen">
+    tools:context=".SplashScreen">
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -30,7 +30,7 @@
             android:textSize="24sp"
             android:textStyle="bold" />
 
-        <TextView
+        <com.ndds.freedomclouds.PrivacyPolicyText
             android:id="@+id/privacy_policy"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"

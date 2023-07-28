@@ -1,23 +1,16 @@
 package com.ndds.freedomclouds;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.text.Spannable;
-import android.text.SpannableStringBuilder;
 import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
-import android.text.style.ForegroundColorSpan;
 import android.view.View;
 import android.widget.TextView;
 
-public class Splash_Screen extends AppCompatActivity {
+public class SplashScreen extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,8 +22,6 @@ public class Splash_Screen extends AppCompatActivity {
         boolean isUserSet = sharedPreferences.contains(MainActivity.START_TIME);
         if (!isUserSet) {
             privacyNotice.setVisibility(View.VISIBLE);
-            privacyNotice.setText(new PrivacyPolicyText(this));
-            privacyNotice.setMovementMethod(LinkMovementMethod.getInstance());
         }
         new Handler().postDelayed(new Runnable() {
             @Override
@@ -39,7 +30,7 @@ public class Splash_Screen extends AppCompatActivity {
                     @Override
                     public void run() {
                         finish();
-                        startActivity(new Intent(Splash_Screen.this,MainActivity.class));
+                        startActivity(new Intent(SplashScreen.this,MainActivity.class));
 
                     }
                 });
@@ -51,8 +42,6 @@ public class Splash_Screen extends AppCompatActivity {
 
     @Override
     public void finish() {
-
         super.finish();
-
     }
 }

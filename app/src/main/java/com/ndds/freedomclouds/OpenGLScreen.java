@@ -87,17 +87,16 @@ public class OpenGLScreen extends GLSurfaceView {
                 idleAnimator.cancel();
                 idleHandler.removeCallbacksAndMessages(null);
                 handler.removeCallbacksAndMessages(null);
-                if(!isGiftRenderer && activity.quoteHandler != null) {
-                    activity.quoteHandler.removeCallbacksAndMessages(null);
-                    activity.quoteHandler = null;
+                if(!isGiftRenderer) {
+                    activity.quotesMaker.removeQuoteTimer();
                 }
                 setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
                 requestRender();
                 break;
             case MotionEvent.ACTION_UP:
-                activity.pauseEmblemSound();
+                activity.audio.pauseEmblemSound();
                 if(!isGiftRenderer)
-                    activity.generateRandomQuote();
+                    activity.quotesMaker.generateRandomQuote();
                 this.idleHandler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -120,13 +119,13 @@ public class OpenGLScreen extends GLSurfaceView {
                 if((int) (dx * TOUCH_SCALE_FACTOR) == 0 && (int)(dy * TOUCH_SCALE_FACTOR) == 0) {
                     if(!needToPlayEmblemSound) {
                         needToPlayEmblemSound = true;
-                        activity.pauseEmblemSound();
+                        activity.audio.pauseEmblemSound();
                     }
                 }
                 else{
                     if (needToPlayEmblemSound) {
                         needToPlayEmblemSound = false;
-                        activity.playEmblemSound();
+                        activity.audio.playEmblemSound();
                     }
                 }
 
