@@ -10,10 +10,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
 import android.graphics.Typeface;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.TypedValue;
@@ -40,10 +36,10 @@ public class MainActivity extends AppCompatActivity implements MainActivityCallb
     private ObjectAnimator rotateHintAnimator;
     SharedPreferences sharedPreferences;
     private BackgroundImage backgroundImage;
-    private boolean isBright = true;
     public SoundClip audio;
     private Settings settings;
     public QuotesMaker quotesMaker;
+    public AmbientLightResponder ambientLightResponder;
 
     private void initOpenGL(int tag){
         ViewGroup view = (ViewGroup)getLayoutInflater().inflate(R.layout.opengl_layout, null);
@@ -78,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityCallb
         openGLScreen.getHolder().setFormat(PixelFormat.TRANSPARENT);
         openGLScreen.setZOrderOnTop(true);
         backgroundImage = findViewById(R.id.wood_image);
-        setupLightSensor();
+        ambientLightResponder = new AmbientLightResponder(this);
     }
 
     @Override
@@ -137,36 +133,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityCallb
         },5000);
     }
 
-    private void setupLightSensor() {
-        SensorManager mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        Sensor mLightSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
-
-        // Implement a listener to receive updates
-        SensorEventListener listener = new SensorEventListener() {
-
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-            }
-
-            @Override
-            public void onSensorChanged(SensorEvent event) {
-                boolean newIsBright = event.values[0] > 15;
-                if (isBright != newIsBright) {
-                    audio.playSound(R.raw.light_switch);
-                    isBright = newIsBright;
-                    openGLScreen.setBrightnessFactor(isBright ? 1 : 0.5f);
-                    backgroundImage.switchLight(isBright);
-                }
-            }
-        };
-
-        // Register the listener with the light sensor -- choosing
-        // one of the SensorManager.SENSOR_DELAY_* constants.
-        mSensorManager.registerListener(
-                listener, mLightSensor, SensorManager.SENSOR_DELAY_UI);
-    }
-
     public void showCalender(){
         Calendar calendar =  Calendar.getInstance();
         DatePickerDialog datePickerDialog = new DatePickerDialog(this,settings,calendar.get(Calendar.YEAR),calendar.get(Calendar.MONTH),calendar.get(Calendar.DAY_OF_MONTH));
@@ -218,6 +184,22 @@ public class MainActivity extends AppCompatActivity implements MainActivityCallb
     public void updateDate(int year, int month, int dayOfMonth){
         if(showDate(year, month, dayOfMonth)) return;
         sharedPreferences.edit().putString(START_TIME,String.format("%d/%d/%d",year,month,dayOfMonth)).apply();
+    }
+
+    @Override
+    public void onAmbientLightResponsivenessChanged(boolean isResponsive) {
+        ambientLightResponder.isAmbientLightResponsive(isResponsive);
+    }
+
+    @Override
+    public void onAmbientBrightnessChanged(boolean isBright) {
+        openGLScreen.setBrightnessFactor(isBright ? 1 : 0.5f);
+        backgroundImage.switchLight(isBright);
+    }
+
+    @Override
+    public boolean isAmbientLightResponsive() {
+        return ambientLightResponder.isAmbientLightResponsive();
     }
 
     public void unwrapGift(){

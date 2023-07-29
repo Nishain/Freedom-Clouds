@@ -1,5 +1,6 @@
 package com.ndds.freedomclouds;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.ComponentName;
@@ -12,17 +13,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.Calendar;
-import java.util.function.Consumer;
 
 public class Settings implements DatePickerDialog.OnDateSetListener {
     MainActivity activity;
     AlertDialog dialog;
     private ViewGroup settingsView;
-    private SharedPreferences sharedPreferences;
+    final private SharedPreferences sharedPreferences;
 
     Settings(MainActivity activity, SharedPreferences sharedPreferences) {
         this.activity = activity;
@@ -49,29 +50,43 @@ public class Settings implements DatePickerDialog.OnDateSetListener {
         activity.startActivity(mainIntent);
     }
 
-    private void resetApp() {
-        Button v = settingsView.findViewById(R.id.reset_memory);
-        if(v.getText().toString().contains("Are you sure ?")){
+    private void resetApp(Button button) {
+        if(button.getText().toString().contains("Are you sure ?")){
             dialog.dismiss();
             sharedPreferences.edit().remove(MainActivity.START_TIME).apply();
             Toast.makeText(activity, "restarting the app", Toast.LENGTH_SHORT).show();
             restartApp();
             return;
         }
-        v.setBackgroundResource(R.drawable.round_beauty_orange);
-        ((Button)v).setText("Are you sure ? (yes)");
+        button.setBackgroundResource(R.drawable.round_beauty_orange);
+        button.setText(R.string.reset_confirmation);
     }
 
 
     private void setListener(int id, Runnable r) {
-        settingsView.findViewById(id).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (id != R.id.reset_memory)
-                    dialog.dismiss();
-                r.run();
-            }
+        settingsView.findViewById(id).setOnClickListener(v -> {
+            if (id != R.id.reset_memory)
+                dialog.dismiss();
+            r.run();
         });
+    }
+
+    private void setListener(int id, FunctionConsumer<Button> consumer) {
+        settingsView.findViewById(id).setOnClickListener(v -> {
+            if (id != R.id.reset_memory)
+                dialog.dismiss();
+            consumer.accept((Button) v);
+        });
+    }
+
+    private void setSwitchListener(int id, boolean initialValue, FunctionConsumer<Boolean> consumer) {
+        @SuppressLint("UseSwitchCompatOrMaterialCode") Switch switchWidget = settingsView.findViewById(id);
+        switchWidget.setChecked(initialValue);
+        switchWidget.setOnCheckedChangeListener((buttonView, isChecked) -> consumer.accept(isChecked));
+    }
+
+    private void onAmbientLightResponsivenessChanged(Boolean isResponsive) {
+        activity.onAmbientLightResponsivenessChanged(isResponsive);
     }
 
 
@@ -97,12 +112,8 @@ public class Settings implements DatePickerDialog.OnDateSetListener {
         setListener(R.id.settings_developer_notice, this::openDeveloperNote);
         setListener(R.id.reset_memory, this::resetApp);
         setListener(R.id.restart_app, this::restartApp);
-        settingsView.findViewById(R.id.settings_dismiss).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
+        setSwitchListener(R.id.settings_ambient_light, activity.isAmbientLightResponsive(), this::onAmbientLightResponsivenessChanged);
+        settingsView.findViewById(R.id.settings_dismiss).setOnClickListener(v -> dialog.dismiss());
 
         dialog.show();
         activity.audio.playSound(R.raw.paper_flip);

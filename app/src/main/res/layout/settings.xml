@@ -61,6 +61,15 @@
         android:padding="5dp"
         android:background="@drawable/round_beauty_green"
         android:text="Developer Notice" />
+
+    <Switch
+        android:id="@+id/settings_ambient_light"
+        android:theme="@style/SettingsSwitch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:text="Ambient Light Responsive" />
+
     <Button
         android:id="@+id/reset_memory"
         android:layout_width="match_parent"
@@ -86,6 +95,7 @@
             android:textColor="@android:color/black"
             android:text="Troubleshooting"
             android:layout_marginHorizontal="5dp" />
+
         <View
             android:layout_height="1dp"
             android:layout_weight="1"
@@ -120,4 +130,5 @@
         android:text="By using this app you agree to our "
         android:textColor="@android:color/black"
         android:textColorLink="#FF9800" />
+
 </LinearLayout>
