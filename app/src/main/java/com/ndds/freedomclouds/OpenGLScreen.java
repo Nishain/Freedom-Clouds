@@ -12,7 +12,7 @@ import android.view.MotionEvent;
 import java.util.ArrayList;
 
 public class OpenGLScreen extends GLSurfaceView {
-    CustomRenderer customRenderer = null;
+    OrnamentRenderer ornamentRenderer = null;
     public MainActivity activity;
     private Handler quoteHandler;
     private boolean isGiftRenderer;
@@ -26,18 +26,18 @@ public class OpenGLScreen extends GLSurfaceView {
     }
 
     public void setBrightnessFactor(float factor) {
-        customRenderer.brightnessFactor = factor;
+        ornamentRenderer.brightnessFactor = factor;
         requestRender();
     }
 
     @SuppressWarnings("unchecked")
     public void initRenderer(Context context, Object ... rendererParams){
         isGiftRenderer = getTag().equals("2");
-        customRenderer = isGiftRenderer ? new GiftRenderer(context,this) : new CustomRenderer(context,this,(ArrayList<Bitmap>) rendererParams[0], (String[]) rendererParams[1]);
+        ornamentRenderer = isGiftRenderer ? new GiftRenderer(context,this) : new OrnamentRenderer(context,this,(ArrayList<Bitmap>) rendererParams[0], (String[]) rendererParams[1]);
         setEGLConfigChooser(true);
         setEGLConfigChooser( 8, 8, 8, 8, 16, 0 );
 
-        setRenderer(customRenderer);
+        setRenderer(ornamentRenderer);
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
     }
     public boolean autoRotate = false;
@@ -52,8 +52,8 @@ public class OpenGLScreen extends GLSurfaceView {
     public void glow(){
         if(getTag().equals("2"))
             return;
-        customRenderer.blendFactor = 0.0f;
-        customRenderer.doGlow = 1;
+        ornamentRenderer.blendFactor = 0.0f;
+        ornamentRenderer.doGlow = 1;
         setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
         requestRender();
     }
@@ -67,7 +67,7 @@ public class OpenGLScreen extends GLSurfaceView {
         this.handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if(OpenGLScreen.this.customRenderer.quickSpinAngle > 0 || OpenGLScreen.this.customRenderer.doGlow != 0)
+                if(OpenGLScreen.this.ornamentRenderer.quickSpinAngle > 0 || OpenGLScreen.this.ornamentRenderer.doGlow != 0)
                     return;
                 OpenGLScreen.this.autoRotate = true;
                 setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
@@ -105,7 +105,7 @@ public class OpenGLScreen extends GLSurfaceView {
                     }
                 },5000);
 
-                if(Math.abs(customRenderer.mAngleY) > 0) {
+                if(Math.abs(ornamentRenderer.mAngleY) > 0) {
                     resetYMovement = true;
                     setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
                 }
@@ -131,14 +131,14 @@ public class OpenGLScreen extends GLSurfaceView {
 
                 if(isXRotating || Math.abs((x-downX)) > 50){
                     isXRotating = true;
-                    customRenderer.setAngleX(
-                            customRenderer.getAngleX() +
+                    ornamentRenderer.setAngleX(
+                            ornamentRenderer.getAngleX() +
                                     ((dx) * TOUCH_SCALE_FACTOR));
                 }
                 if (!isXRotating || Math.abs(y-downY) > 50) {
                     isXRotating = false;
-                    customRenderer.setAngleY(
-                            customRenderer.getAngleY() +
+                    ornamentRenderer.setAngleY(
+                            ornamentRenderer.getAngleY() +
                                     ((dy) * TOUCH_SCALE_FACTOR));
                 }
 

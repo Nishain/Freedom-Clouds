@@ -17,7 +17,7 @@ import java.util.Random;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-class CustomRenderer implements GLSurfaceView.Renderer {
+class OrnamentRenderer implements GLSurfaceView.Renderer {
     public volatile float mAngleX;
     public volatile float mAngleY;
     Context context;
@@ -40,7 +40,7 @@ class CustomRenderer implements GLSurfaceView.Renderer {
         return mAngleY;
     }
 
-    CustomRenderer(Context context, OpenGLScreen surfaceView, ArrayList<Bitmap> bitmaps, String[] emblemTypes) {
+    OrnamentRenderer(Context context, OpenGLScreen surfaceView, ArrayList<Bitmap> bitmaps, String[] emblemTypes) {
         this.emblemTypes = emblemTypes;
         if (bitmaps != null) {
             emblemImages = bitmaps.toArray(new Bitmap[0]);
@@ -51,7 +51,7 @@ class CustomRenderer implements GLSurfaceView.Renderer {
         this.context = context;
     }
 
-    CustomRenderer(Context context, OpenGLScreen surfaceView) {
+    OrnamentRenderer(Context context, OpenGLScreen surfaceView) {
         this.surfaceView = surfaceView;
         this.context = context;
     }
@@ -351,15 +351,31 @@ class CustomRenderer implements GLSurfaceView.Renderer {
             bindPicture(flipImage(resultantMutatedImage), i + 2);
         }
 
+
+
         float outlineOffset = 0.0125f;
         program = GLES20.glCreateProgram();
         textureCircle1 = new Circle(-0.0625f, program);
         textureCircle2 = new Circle(0.0625f, program);
         cylinder = new Cylinder(0.0625f, program, .5f);
+        cylinder.color = new float[]{ 1.0f, 0.64705882f, 0.0f, 1.0f };
         outlineCircle1 = new Circle(-0.0625f - outlineOffset, program, .5f + outlineOffset);
         outlineCircle2 = new Circle(0.0625f + outlineOffset, program, .5f + outlineOffset);
         cylinder2 = new Cylinder(0.0625f + outlineOffset, program, .5f + outlineOffset);
-        cylinder2.color = new float[]{1.0f, 1.0f, 1.0f, 1.0f};
+
+        int vertexShader = OrnamentRenderer.loadShader(GLES20.GL_VERTEX_SHADER,
+                OrnamentRenderer.vertexShaderCode);
+        int fragmentShader = OrnamentRenderer.loadShader(GLES20.GL_FRAGMENT_SHADER,
+                OrnamentRenderer.fragmentShaderCode);
+
+        // add the vertex shader to program
+        GLES20.glAttachShader(program, vertexShader);
+
+        // add the fragment shader to program
+        GLES20.glAttachShader(program, fragmentShader);
+
+        // creates OpenGL ES program executables
+        GLES20.glLinkProgram(program);
     }
 
     @Override

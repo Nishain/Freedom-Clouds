@@ -10,7 +10,7 @@ import android.opengl.Matrix;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-class GiftRenderer extends CustomRenderer implements GLSurfaceView.Renderer {
+class GiftRenderer extends OrnamentRenderer implements GLSurfaceView.Renderer {
     public volatile float mAngle;
     Context context;
     private Circle mSquare2;
@@ -71,9 +71,20 @@ class GiftRenderer extends CustomRenderer implements GLSurfaceView.Renderer {
         mSquare2Outline = new Circle(0.0625f + outlineOffset, program, .5f + outlineOffset);
         cylinder2 = new Cylinder(0.0625f + outlineOffset, program, .5f + outlineOffset);
         cylinder2.color = new float[]{1.0f, 1.0f, 1.0f, 1.0f};
-//        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
+        int vertexShader = OrnamentRenderer.loadShader(GLES20.GL_VERTEX_SHADER,
+                OrnamentRenderer.vertexShaderCode);
+        int fragmentShader = OrnamentRenderer.loadShader(GLES20.GL_FRAGMENT_SHADER,
+                OrnamentRenderer.fragmentShaderCode);
 
+        // add the vertex shader to program
+        GLES20.glAttachShader(program, vertexShader);
+
+        // add the fragment shader to program
+        GLES20.glAttachShader(program, fragmentShader);
+
+        // creates OpenGL ES program executables
+        GLES20.glLinkProgram(program);
     }
 
     @Override
@@ -86,8 +97,8 @@ class GiftRenderer extends CustomRenderer implements GLSurfaceView.Renderer {
     private final float[] vPMatrix = new float[16];
     private final float[] projectionMatrix = new float[16];
     private final float[] viewMatrix = new float[16];
-    private float[] rotationMatrix = new float[16];
-    private float[] outlineTranslator = new float[16];
+    private final float[] rotationMatrix = new float[16];
+    private final float[] outlineTranslator = new float[16];
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
