@@ -1,17 +1,15 @@
 package com.ndds.freedomclouds;
 
 import android.app.Activity;
-import android.content.Context;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.SoundPool;
-import android.os.Build;
 
 public class SoundClip {
     Activity context;
-    private SoundPool soundPool;
-    private MediaPlayer emblemRotateSound;
+    private final SoundPool soundPool;
+    private final MediaPlayer emblemRotateSound;
 
     SoundClip(Activity context) {
         this.context = context;
@@ -41,12 +39,18 @@ public class SoundClip {
     }
 
     public void pauseEmblemSound(){
-        context.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                emblemRotateSound.pause();
-            }
-        });
+        if(emblemRotateSound.isPlaying()) {
+            emblemRotateSound.pause();
+        }
+    }
+
+    public void pauseAll() {
+        soundPool.autoPause();
+        emblemRotateSound.pause();
+    }
+
+    public void resumeAll() {
+        soundPool.autoResume();
     }
 
     public void release() {
@@ -54,13 +58,7 @@ public class SoundClip {
     }
 
     public void playEmblemSound(){
-        context.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                emblemRotateSound.start();
-            }
-        });
-
+        emblemRotateSound.start();
     }
 
     public void playSound(int id){

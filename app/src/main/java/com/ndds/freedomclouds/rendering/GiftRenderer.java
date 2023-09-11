@@ -1,4 +1,4 @@
-package com.ndds.freedomclouds;
+package com.ndds.freedomclouds.rendering;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -7,10 +7,12 @@ import android.opengl.GLSurfaceView;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
 
-import javax.microedition.khronos.egl.EGLConfig;
+import com.ndds.freedomclouds.OpenGLScreen;
+import com.ndds.freedomclouds.R;
+
 import javax.microedition.khronos.opengles.GL10;
 
-class GiftRenderer extends OrnamentRenderer implements GLSurfaceView.Renderer {
+public class GiftRenderer extends OrnamentRenderer implements GLSurfaceView.Renderer {
     public volatile float mAngle;
     Context context;
     private Circle mSquare2;
@@ -25,7 +27,7 @@ class GiftRenderer extends OrnamentRenderer implements GLSurfaceView.Renderer {
         return mAngle;
     }
 
-    GiftRenderer(Context context, OpenGLScreen surfaceView) {
+    public GiftRenderer(Context context, OpenGLScreen surfaceView) {
         super(context, surfaceView);
         this.surfaceView = surfaceView;
         this.context = context;
@@ -38,7 +40,7 @@ class GiftRenderer extends OrnamentRenderer implements GLSurfaceView.Renderer {
     private Circle mSquare;
 
 
-    private int textures[] = new int[2];
+    private final int[] textures = new int[2];
 
     private void bindPicture(Bitmap picture, int index) {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[index]);
@@ -50,7 +52,7 @@ class GiftRenderer extends OrnamentRenderer implements GLSurfaceView.Renderer {
         GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, picture, 0);
     }
 
-    private void loadTextures() {
+    protected void loadTextures() {
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         GLES20.glGenTextures(2, textures, 0);
 
@@ -85,13 +87,6 @@ class GiftRenderer extends OrnamentRenderer implements GLSurfaceView.Renderer {
 
         // creates OpenGL ES program executables
         GLES20.glLinkProgram(program);
-    }
-
-    @Override
-    public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        loadTextures();
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-        surfaceView.requestRender();
     }
 
     private final float[] vPMatrix = new float[16];

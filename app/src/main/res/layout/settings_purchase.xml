@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal"
+        android:padding="20dp">
+        <com.ndds.freedomclouds.common.RoundedLinearLayout
+            android:layout_width="match_parent"
+            android:orientation="vertical"
+            app:outlineRadius="20dp"
+            android:paddingVertical="12dp"
+            app:bgColor="#fff2cc"
+            android:layout_height="wrap_content">
+            <ImageView
+                android:id="@+id/purchasePosterImg"
+                android:layout_width="match_parent"
+                android:layout_height="270dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="center"
+                android:text="Dynamic Emblem Drawing"
+                android:textSize="25sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="@string/promotional_text" />
+            <com.ndds.freedomclouds.common.ActionButton
+                android:id="@+id/purchaseBtn"
+                app:colorTheme="@color/beautyGreen"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:layout_marginHorizontal="12dp"
+                android:text="Purchase" />
+        </com.ndds.freedomclouds.common.RoundedLinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="12dp"
+            android:text="@string/purchaseRestoreLabel" />
+        <com.ndds.freedomclouds.common.ActionButton
+            android:id="@+id/restorePurchaseBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="12dp"
+            app:colorTheme="@color/beautyOrange"
+            android:text="Restore purchase" />
+    </LinearLayout>
+</ScrollView>

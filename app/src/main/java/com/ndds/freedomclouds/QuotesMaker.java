@@ -26,13 +26,11 @@ public class QuotesMaker {
     }
 
     public void generateRandomQuote(){
-        if(quoteHandler == null)
-            quoteHandler = new Handler();
-        else {
+        if (quoteHandler != null){
             quoteHandler.removeCallbacksAndMessages(null);
-            quoteHandler = null;
         }
-        quoteHandler.postDelayed(() -> activity.runOnUiThread(() -> {
+        quoteHandler = new Handler();
+        quoteHandler.postDelayed(() -> {
             ArrayList<String> quotesArrayList = new ArrayList<>();
             try {
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(activity.getAssets().open("quotes.txt")));
@@ -49,6 +47,6 @@ public class QuotesMaker {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }),1500);
+        }, 1500);
     }
 }

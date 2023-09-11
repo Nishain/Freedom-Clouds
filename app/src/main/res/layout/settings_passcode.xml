@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:padding="20dp">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="10dp"
+        android:text="@string/passcode_introduction"/>
+    <TextView
+        android:id="@+id/textView6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:text="Passcode" />
+    <EditText
+        android:id="@+id/passcode_editor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="@string/passcode_hint"
+        android:maxLength="4"
+        android:inputType="numberPassword" />
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <com.ndds.freedomclouds.common.ActionButton
+            android:id="@+id/passcode_disable"
+            android:layout_weight="1"
+            app:colorTheme="@color/alertRed"
+            android:layout_marginRight="12dp"
+            android:textColor="@android:color/white"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Delete passcode" />
+        <com.ndds.freedomclouds.common.ActionButton
+            android:id="@+id/passcode_enable"
+            android:layout_weight="1"
+            app:colorTheme="@color/beautyGreen"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Enable passcode" />
+    </TableRow>
+
+</LinearLayout>

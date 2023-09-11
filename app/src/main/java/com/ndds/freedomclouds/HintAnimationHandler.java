@@ -13,6 +13,7 @@ class HintAnimationHandler extends AnimatorListenerAdapter {
 
     HintAnimationHandler(View v) {
         view = v;
+        view.setAlpha(0);
     }
     @Override
     public void onAnimationCancel(Animator animation) {

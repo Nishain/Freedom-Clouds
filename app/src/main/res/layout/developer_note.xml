@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@drawable/paper"
     android:gravity="center"
     android:orientation="vertical"
@@ -34,11 +35,11 @@
         android:textSize="17sp"
         android:textStyle="bold|italic" />
 
-    <Button
+    <com.ndds.freedomclouds.common.ActionButton
         android:id="@+id/developer_note_ok"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:background="@drawable/round_beauty_green"
+        app:colorTheme="@color/beautyGreen"
         android:text="Thanks!" />
 </LinearLayout>

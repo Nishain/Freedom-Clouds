@@ -3,9 +3,18 @@
     <string name="title_activity_slash_screen">SlashScreen</string>
     <string name="_30_days_progress">30 Days progress</string>
     <string name="days_completed_in_week">Days completed in week</string>
-    <string name="developer_note">This app is a simple day counter to count the progress of elapsed days spent on preventing unhealthy habits. This app is built on the OpenGL 2.0 version so it is expected to be supported for many devices. The instruction for the app is simple, you first set up the date you have given up the habit, this can also be later changed from settings or optionally you reset the timer to the current date if you wish to start over. You can also reset the app from settings so it will treat you as a new user next time when you open the app. Hope you enjoy this simple app and helpful to take a break from unhealthy habits.
+    <string name="defaultNotificationContent">"It's been {days} days since the event"</string>
+    <string name="developer_note">This app is a simple day counter to count the number of progressed days spent since a event or occasion significant to you. This app is built on the OpenGL 2.0 version so it is expected to be supported for many devices. The instruction for the app is simple, you first set up the date when the occasion / event happened or when you have started a good habit or any topic you want, the starting date can also be later changed from settings or optionally you reset the timer to the current date if you wish to start over. You can also reset the app from settings so it will treat you as a new user (except for purchases) when next time when you open the app. Hope you enjoy and appreciate this app, also there is something special on the menu. Shh! it\'s a secret!.
 </string>
-    <string name="welcome_note">Greetings! with this simple app you can count days you have successfully avoided bad habits.First of, lets enter the date you have given up your bad habit</string>
+        <string name="bootReceiverFailNotice">It seems auto startup on phone reboot has been disabled for this app. Please enable it manually from settings (we cannot do it from the app itself unfortunately) inorder to make notifications work properly after phone reboot.</string>
+    <string name="remindTimeSpecialNotice">Approximate time of the day to send you the notification. The precision of time may change slightly in respect of device battery optimization. Please note that if your device is off during the time of the reminder the notification will be skipped and not shown until next cycle of days.</string>
+    <string name="welcome_note">Greetings! with this simple app you can count days you have passed from an event of your choice. First of all let\'s enter the date of when did the event occurred</string>
     <string name="reset_confirmation">Are you sure ? (yes)</string>
+    <string name="passcode_hint">4 digit Passcode</string>
+    <string name="passcode_introduction">Add Passcode protection when opening this app. This would be important if you want to prevent others from knowing day tracking of certain events.</string>
+    <string name="notificationRemindHint">Notification reminder to make you aware how many days have passed since the event on each recurring custom number of days you selected</string>
+    <string name="notificationTemplateHint">Text template to display on notification. Use {days} to substitute and place with number of days passed since the significant event</string>
+    <string name="purchaseRestoreLabel">Restore your previous purchase if it not already activated you may have to do this on app reset or cache clear.</string>
+    <string name="promotional_text">Create and draw random CPU generated arts on emblems realtime on each turn! No need internet connection for generate arts</string>
     <!-- Strings used for fragments for navigation -->
 </resources>

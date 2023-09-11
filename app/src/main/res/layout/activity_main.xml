@@ -8,19 +8,25 @@
     android:orientation="vertical"
     android:id="@+id/root"
     tools:context=".MainActivity">
-
-    <com.ndds.freedomclouds.BackgroundImage
+    <ImageView
         android:id="@+id/wood_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:src="@drawable/wood"
         android:scaleType="fitXY" />
-    <LinearLayout
+    <com.ndds.freedomclouds.BackgroundImage
+        android:id="@+id/backgroundHueController"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0"
+        android:scaleType="fitXY"
+        android:src="@drawable/welcome" />
+    <com.ndds.freedomclouds.common.RoundedLinearLayout
         android:id="@+id/emblem_loading_indicator"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:background="@drawable/white_round_border"
+        app:outlineRadius="15dp"
         android:orientation="vertical"
         android:padding="10dp"
         android:visibility="visible">
@@ -35,9 +41,9 @@
             android:id="@+id/textView7"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Unwrapping Present"
+            android:text="Loading"
             android:textColor="@android:color/black" />
-    </LinearLayout>
+    </com.ndds.freedomclouds.common.RoundedLinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -76,7 +82,6 @@
                 android:src="@drawable/header_text"
                 android:tint="@android:color/white" />
         </FrameLayout>
-
         <TextView
             android:id="@+id/emblemType"
             android:layout_width="match_parent"
@@ -87,20 +92,68 @@
             android:textColor="@android:color/white"
             android:textSize="@dimen/normalEmblemTypeTextSize"
             android:textStyle="bold" />
-
         <ImageView
             android:id="@+id/rotate_hint"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_gravity="right"
             android:layout_marginRight="25dp"
-            android:alpha="0"
+            android:alpha="1"
             android:scaleType="fitCenter"
             android:tint="@android:color/white"
             android:translationX="-20dp"
             app:srcCompat="@drawable/tap" />
-
     </LinearLayout>
+    <com.ndds.freedomclouds.UpdateCheckManager
+        android:id="@+id/updateCheckManager"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/gradient_dark_down"
+        android:paddingBottom="20dp">
+        <com.ndds.freedomclouds.common.RoundedLinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="5dp"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal"
+            app:outlineRadius="30dp"
+            android:layout_gravity="center_horizontal">
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingRight="5dp">
+                <TextView
+                    android:id="@+id/updateProgressText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:textStyle="bold"
+                    android:text="100%" />
+
+                <com.google.android.material.progressindicator.CircularProgressIndicator
+                    android:id="@+id/updateProgressCircularIndicator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:indicatorSize="50dp"
+                    app:trackThickness="5dp"
+                    app:trackColor="@color/beautyOrange"
+                    android:indeterminate="false"
+                    android:max="100"
+                    android:progress="40"
+                    app:trackCornerRadius="5dp"
+                    app:indicatorColor="@color/beautyGreen" />
+            </FrameLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Downloading..."
+                android:textStyle="bold"
+                android:layout_marginLeft="12dp" />
+        </com.ndds.freedomclouds.common.RoundedLinearLayout>
+    </com.ndds.freedomclouds.UpdateCheckManager>
+
 
     <LinearLayout
         android:id="@+id/interface_container"
@@ -114,19 +167,17 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-
-            <LinearLayout
+            <com.ndds.freedomclouds.common.RoundedLinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="bottom|center_horizontal|center_vertical">
-
+                android:layout_gravity="center_horizontal|bottom"
+                app:topOutlineRadius="30dp">
                 <TextView
                     android:id="@+id/dayCount"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_gravity="bottom|center_horizontal"
                     android:layout_weight="1"
-                    android:background="@drawable/day_count_background"
                     android:gravity="bottom"
                     android:paddingLeft="15dp"
                     android:paddingTop="10dp"
@@ -134,18 +185,37 @@
                     android:text="0 Days"
                     android:textColor="@android:color/black"
                     android:textSize="30sp" />
-            </LinearLayout>
-
+            </com.ndds.freedomclouds.common.RoundedLinearLayout>
+            <com.ndds.freedomclouds.common.RoundedLinearLayout
+                android:id="@+id/issuePrompt"
+                android:orientation="vertical"
+                app:outlineRadius="10dp"
+                android:paddingVertical="5dp"
+                android:paddingHorizontal="10dp"
+                android:layout_marginBottom="25dp"
+                android:layout_marginLeft="10dp"
+                android:layout_gravity="start"
+                android:gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:tint="@color/beautyOrange"
+                    android:src="@android:drawable/ic_dialog_alert" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Issue" />
+            </com.ndds.freedomclouds.common.RoundedLinearLayout>
             <ImageView
-                android:id="@+id/imageView3"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                android:layout_gravity="right|top"
+                android:layout_gravity="bottom|right"
                 android:layout_marginRight="20dp"
                 android:layout_marginBottom="30dp"
                 android:onClick="glow"
                 app:srcCompat="@drawable/star" />
-
         </FrameLayout>
 
         <LinearLayout
@@ -182,9 +252,8 @@
                 <ProgressBar
                     android:id="@+id/weekDaysProgress"
                     style="?android:attr/progressBarStyleHorizontal"
-
                     android:layout_width="match_parent"
-                    android:layout_height="4dp"
+                    android:layout_height="7dp"
                     android:layout_marginLeft="20dp"
                     android:layout_marginRight="20dp"
                     android:layout_weight="1"
@@ -212,7 +281,7 @@
                     android:id="@+id/monthDaysProgress"
                     style="?android:attr/progressBarStyleHorizontal"
                     android:layout_width="match_parent"
-                    android:layout_height="4dp"
+                    android:layout_height="7dp"
                     android:layout_marginLeft="20dp"
                     android:layout_marginRight="20dp"
                     android:layout_weight="1"

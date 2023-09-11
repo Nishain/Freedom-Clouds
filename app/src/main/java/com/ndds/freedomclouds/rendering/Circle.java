@@ -1,9 +1,7 @@
-package com.ndds.freedomclouds;
+package com.ndds.freedomclouds.rendering;
 
 import android.opengl.GLES20;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 public class Circle extends Shape{
@@ -36,13 +34,13 @@ public class Circle extends Shape{
     public Circle(float depth, int program) {
         mProgram = program;
         float[] positions = new float[(360 * 9)];
-        float[] textureCood = new float[360 * 6];
+        float[] textureCoordinates = new float[360 * 6];
         int j, k;
         for(int i = 0; i < 360; i+= 1){
             j =  9 * i;
             k = i * 6;
-            textureCood[k] = 0.5f;
-            textureCood[k+1] = 0.5f;
+            textureCoordinates[k] = 0.5f;
+            textureCoordinates[k+1] = 0.5f;
             positions[j] = 0.0f;
             positions[j + 1] = 0.0f;
             positions[j + 2] = depth;
@@ -56,21 +54,21 @@ public class Circle extends Shape{
             positions[j + 3] = distanceX;
             positions[j + 4] = distanceY;
             positions[j + 5] = depth;
-            textureCood[k + 2] = distanceX + 0.5f;
-            textureCood[k + 3] = distanceY + 0.5f;
+            textureCoordinates[k + 2] = distanceX + 0.5f;
+            textureCoordinates[k + 3] = distanceY + 0.5f;
 
             positions[j + 6] = nextDistanceX;
             positions[j + 7] = nextDistanceY;
             positions[j + 8] = depth;
-            textureCood[k + 4] = nextDistanceX + 0.5f;
-            textureCood[k + 5] = nextDistanceY + 0.5f;
+            textureCoordinates[k + 4] = nextDistanceX + 0.5f;
+            textureCoordinates[k + 5] = nextDistanceY + 0.5f;
         }
 
         vertexBuffer = buildBuffer(positions);
-        textureBuffer = buildBuffer(textureCood);
+        textureBuffer = buildBuffer(textureCoordinates);
     }
 
-    public void draw(int texture1, int texture2, float blendFactor, float brightnessFactor) {
+    public void draw(int texture1, int texture2, float blendFactor, double brightnessFactor) {
         // Add program to OpenGL ES environment
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
         GLES20.glUseProgram(mProgram);
@@ -99,16 +97,16 @@ public class Circle extends Shape{
 
         // Prepare the triangle coordinate data
         // 4 bytes per vertex
-        int vertexStride = COORDS_PER_VERTEX * 4;
-        GLES20.glVertexAttribPointer(positionHandle, COORDS_PER_VERTEX,
+        int vertexStride = COORDINATES_PER_VERTEX * 4;
+        GLES20.glVertexAttribPointer(positionHandle, COORDINATES_PER_VERTEX,
                 GLES20.GL_FLOAT, false,
                 vertexStride, vertexBuffer);
         int isTextureHandle  = GLES20.glGetUniformLocation(mProgram,"textured");
 
         int colorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
         float[] blendedColor = new float[] {
-                color[0] * brightnessFactor,
-                color[1] * brightnessFactor,
+                (float) (color[0] * brightnessFactor),
+                (float) (color[1] * brightnessFactor),
                 color[2], color[3]
         };
 

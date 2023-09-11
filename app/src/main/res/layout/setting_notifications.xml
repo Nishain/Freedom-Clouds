@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    android:padding="20dp">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/notificationRemindHint"
+        />
+    <EditText
+        android:id="@+id/editRemindInterval"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="10dp"
+        android:ems="10"
+        android:hint="interval in days"
+        android:inputType="number" />
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <com.ndds.freedomclouds.common.ActionButton
+            android:id="@+id/notificationRemove"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="12dp"
+            android:layout_weight="1"
+            app:colorTheme="@color/alertRed"
+            android:textColor="@android:color/white"
+            android:text="Remove" />
+        <com.ndds.freedomclouds.common.ActionButton
+            android:id="@+id/notificationAction"
+            app:colorTheme="@color/beautyGreen"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Update Reminder" />
+    </TableRow>
+
+    <TableRow
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:layout_margin="12dp">
+
+        <TextView
+            android:id="@+id/remindTimeLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Remind me at 8:30 am" />
+        <ImageView
+            android:id="@+id/notificationRemindTimeSpecialNotice"
+            android:layout_height="20dp"
+            android:layout_width="20dp"
+            android:src="@android:drawable/ic_dialog_info"
+            android:layout_marginHorizontal="10dp"
+            app:tint="@color/beautyBlue" />
+
+        <com.ndds.freedomclouds.common.ActionButton
+            android:id="@+id/remindTimeButton"
+            android:layout_marginLeft="12dp"
+            app:colorTheme="@color/beautyBlue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="change" />
+    </TableRow>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <TextView
+            android:labelFor="@id/notificationTemplate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/notificationTemplateHint" />
+        <TableRow android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <EditText
+                android:id="@+id/notificationTemplate"
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/defaultNotificationContent" />
+            <ImageButton
+                android:id="@+id/notificationTemplateClear"
+                android:background="@android:color/transparent"
+                android:src="@drawable/close"
+                android:scaleType="fitXY"
+                android:layout_gravity="center_vertical"
+                android:layout_width="35dp"
+                android:layout_height="35dp" />
+        </TableRow>
+
+        <com.ndds.freedomclouds.common.ActionButton
+            android:id="@+id/saveTemplateButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="12dp"
+            app:colorTheme="@color/beautyGreen"
+            android:text="Save template" />
+    </LinearLayout>
+    </LinearLayout>

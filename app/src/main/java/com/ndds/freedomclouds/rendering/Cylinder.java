@@ -1,10 +1,4 @@
-package com.ndds.freedomclouds;
-
-import android.opengl.GLES20;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
+package com.ndds.freedomclouds.rendering;
 
 public class Cylinder extends Shape {
     public Cylinder(float depth, int program, float radius) {

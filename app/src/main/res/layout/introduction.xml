@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -23,7 +21,8 @@
         android:layout_marginEnd="0dp"
         android:layout_marginRight="0dp"
         android:layout_marginBottom="0dp"
-        android:scaleType="centerCrop" />
+        android:scaleType="centerCrop"
+        android:src="@drawable/introduction_background"/>
 
     <LinearLayout
         android:id="@+id/intro_content"
@@ -52,12 +51,12 @@
             android:text="@string/welcome_note"
             android:textColor="@android:color/black" />
 
-        <Button
+        <com.ndds.freedomclouds.common.ActionButton
             android:id="@+id/introduction_ok"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:background="@drawable/round_beauty_green"
+            app:colorTheme="@color/beautyGreen"
             android:text="set Date" />
     </LinearLayout>
 </RelativeLayout>

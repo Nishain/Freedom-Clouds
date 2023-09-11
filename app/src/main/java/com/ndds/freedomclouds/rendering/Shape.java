@@ -1,4 +1,4 @@
-package com.ndds.freedomclouds;
+package com.ndds.freedomclouds.rendering;
 
 import android.opengl.GLES20;
 
@@ -8,7 +8,7 @@ import java.nio.FloatBuffer;
 
 public class Shape {
     // number of coordinates per vertex in this array
-    static final int COORDS_PER_VERTEX = 3;
+    static final int COORDINATES_PER_VERTEX = 3;
     protected FloatBuffer vertexBuffer;
     protected int mProgram = 0;
     protected FloatBuffer buildBuffer(float[] positions) {
@@ -23,7 +23,7 @@ public class Shape {
     }
     float[] color = { 1, 1, 1, 1 };
 
-    public void draw(float brightnessFactor) {
+    public void draw(double brightnessFactor) {
         // Add program to OpenGL ES environment
         GLES20.glUseProgram(mProgram);
 
@@ -35,8 +35,8 @@ public class Shape {
 
         // Prepare the triangle coordinate data
         // 4 bytes per vertex
-        int vertexStride = COORDS_PER_VERTEX * 4;
-        GLES20.glVertexAttribPointer(positionHandle, COORDS_PER_VERTEX,
+        int vertexStride = COORDINATES_PER_VERTEX * 4;
+        GLES20.glVertexAttribPointer(positionHandle, COORDINATES_PER_VERTEX,
                 GLES20.GL_FLOAT, false,
                 vertexStride, vertexBuffer);
 
@@ -47,8 +47,8 @@ public class Shape {
 
         // Set color for drawing the triangle
         float[] blendedColor = new float[] {
-                color[0] * brightnessFactor,
-                color[1] * brightnessFactor,
+                (float) (color[0] * brightnessFactor),
+                (float) (color[1] * brightnessFactor),
                 color[2], color[3]
         };
         GLES20.glUniform4fv(colorHandle, 1, blendedColor, 0);

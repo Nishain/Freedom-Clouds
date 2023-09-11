@@ -4,7 +4,11 @@
     <color name="colorPrimaryDark">#3700B3</color>
     <color name="colorAccent">#03DAC5</color>
     <color name="beautyGreen">#08FD29</color>
+    <color name="alertRed">#FD3908</color>
     <color name="beautyBlue">#0AD0F8</color>
     <color name="beautyOrange">#FF9800</color>
+    <color name="brownOutline">#853b0b</color>
+    <color name="brownLight">#ffd966</color>
+    <color name="brownDark">#f4b183</color>
     <color name="transparentBlack">#80000000</color>
 </resources>

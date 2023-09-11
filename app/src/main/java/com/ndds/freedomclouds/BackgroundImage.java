@@ -10,35 +10,29 @@ import android.util.AttributeSet;
 import androidx.annotation.Nullable;
 
 public class BackgroundImage extends androidx.appcompat.widget.AppCompatImageView {
-    Bitmap backgroundBitmap;
 
-    private void init(Context context) {
-        backgroundBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.wood);
+    public void init(Context context) {
+        Bitmap backgroundBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.wood);
+
+        Bitmap darkerBitmap = backgroundBitmap.copy(Bitmap.Config.ARGB_8888, true);
+        Canvas drawCanvas = new Canvas(darkerBitmap);
+        drawCanvas.drawColor(0xff0000ff, PorterDuff.Mode.MULTIPLY);
+        setImageBitmap(darkerBitmap);
     }
 
     public BackgroundImage(Context context) {
         super(context);
-        init(context);
     }
 
     public BackgroundImage(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        init(context);
     }
 
     public BackgroundImage(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init(context);
     }
 
-    public void switchLight(boolean isBright) {
-        if (isBright) {
-            setImageBitmap(backgroundBitmap);
-        } else {
-            Bitmap darkerBitmap = backgroundBitmap.copy(Bitmap.Config.ARGB_8888, true);
-            Canvas drawCanvas = new Canvas(darkerBitmap);
-            drawCanvas.drawColor(0xff1010ee, PorterDuff.Mode.MULTIPLY);
-            setImageBitmap(darkerBitmap);
-        }
+    public void changeBrightness(double brightnessFactor) {
+        setAlpha((float) (1 - brightnessFactor));
     }
 }

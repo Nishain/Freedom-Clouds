@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
-import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.widget.TextView;
 
@@ -26,22 +25,9 @@ public class SplashScreen extends AppCompatActivity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        finish();
-                        startActivity(new Intent(SplashScreen.this,MainActivity.class));
-
-                    }
-                });
-
-
+                finish();
+                startActivity(new Intent(SplashScreen.this,MainActivity.class));
             }
         }, isUserSet ? 1000 : 5000);
-    }
-
-    @Override
-    public void finish() {
-        super.finish();
     }
 }
