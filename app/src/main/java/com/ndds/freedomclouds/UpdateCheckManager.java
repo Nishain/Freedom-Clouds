@@ -7,7 +7,6 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -27,9 +26,11 @@ import com.google.android.play.core.install.InstallStateUpdatedListener;
 import com.google.android.play.core.install.model.AppUpdateType;
 import com.google.android.play.core.install.model.InstallStatus;
 import com.google.android.play.core.install.model.UpdateAvailability;
+import com.ndds.freedomclouds.common.ActionButton;
+import com.ndds.freedomclouds.common.InsetSafeLinearLayout;
 import com.ndds.freedomclouds.common.SheetAlert;
 
-public class UpdateCheckManager extends FrameLayout implements InstallStateUpdatedListener {
+public class UpdateCheckManager extends InsetSafeLinearLayout implements InstallStateUpdatedListener {
     private MainActivity mainActivity;
     private ActivityResultLauncher<IntentSenderRequest> activityLauncher;
     private AppUpdateManager appUpdateManager;
@@ -37,18 +38,9 @@ public class UpdateCheckManager extends FrameLayout implements InstallStateUpdat
     private CircularProgressIndicator progressPercentage;
     private boolean isDownloading = false;
 
-    public UpdateCheckManager(@NonNull Context context) {
-        super(context);
-    }
-
     public UpdateCheckManager(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
-
-    public UpdateCheckManager(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-    }
-
 
     public void init(MainActivity mainActivity) {
         this.mainActivity = mainActivity;

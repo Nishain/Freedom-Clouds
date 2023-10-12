@@ -16,5 +16,6 @@
     <string name="notificationTemplateHint">Text template to display on notification. Use {days} to substitute and place with number of days passed since the significant event</string>
     <string name="purchaseRestoreLabel">Restore your previous purchase if it not already activated you may have to do this on app reset or cache clear.</string>
     <string name="promotional_text">Create and draw random CPU generated arts on emblems realtime on each turn! No need internet connection for generate arts</string>
+    <string name="text_settings_header">You can add a title and description of the event. Title would be shown on notification and description will be shown on back of the emblem,</string>
     <!-- Strings used for fragments for navigation -->
 </resources>

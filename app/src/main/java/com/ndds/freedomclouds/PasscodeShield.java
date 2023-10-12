@@ -47,6 +47,12 @@ public class PasscodeShield implements View.OnClickListener, View.OnTouchListene
         this.sharedPreferences = sharedPreferences;
     }
 
+    public void runAfterNextUnlock(TaskAfterUnlock task) {
+        if (sharedPreferences.contains(PASSCODE))
+            postTask = task;
+        else task.afterUnlocked();
+    }
+
     public void runTaskAfterUnlock(TaskAfterUnlock task) {
         if (isDisplaying) postTask = task;
         else task.afterUnlocked();

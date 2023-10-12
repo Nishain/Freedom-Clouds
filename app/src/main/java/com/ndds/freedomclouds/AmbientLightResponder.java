@@ -1,6 +1,7 @@
 package com.ndds.freedomclouds;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -8,37 +9,36 @@ import android.hardware.SensorManager;
 
 public class AmbientLightResponder implements SensorEventListener {
     private final SensorManager sensorManager;
+    public final static String AMBIENT_LIGHT_RESPONSIVE = "swapAmbientResponsiveness";
     MainActivity activity;
     private static final float threshold = 20;
-    private boolean isAmbientLightResponsive = true;
+    private boolean isAmbientLightResponsive;
     private boolean previousIsBright = true;
     private final Sensor lightSensor;
 
-    public void isAmbientLightResponsive(Boolean isResponsive) {
-        if(isResponsive) {
-            activateSensor();
-        } else {
+    public void setAmbientResponsiveness(boolean isResponsive) {
+        isAmbientLightResponsive = isResponsive;
+        if(isAmbientLightResponsive) start();
+        else {
             activity.onAmbientBrightnessChanged(1.0f);
             release();
         }
-        isAmbientLightResponsive = isResponsive;
     }
 
-    public void activateSensor() {
-        sensorManager.registerListener(
-                this, lightSensor, SensorManager.SENSOR_DELAY_NORMAL);
+    public void resumeSensor() {
+        if (isAmbientLightResponsive) start();
     }
 
-    public boolean isAmbientLightResponsive() {
-        return isAmbientLightResponsive;
+    private void start() {
+        sensorManager.registerListener(this, lightSensor, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
-
-    AmbientLightResponder(MainActivity activity) {
+    AmbientLightResponder(MainActivity activity, SharedPreferences sharedPreferences) {
         this.activity = activity;
         sensorManager = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
         lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
-        activateSensor();
+        isAmbientLightResponsive = sharedPreferences.getBoolean(AMBIENT_LIGHT_RESPONSIVE, true);
+        if (isAmbientLightResponsive) start();
     }
 
     public void release() {

@@ -15,7 +15,6 @@ import com.ndds.freedomclouds.common.SheetAlert;
 
 public class Settings {
     final Bundle bundle;
-
     static class Bundle {
         final SharedPreferences sharedPreferences;
         final MainActivity activity;
@@ -47,6 +46,7 @@ public class Settings {
         rootView.findViewById(R.id.settings_dismiss).setOnClickListener(v -> sheetAlert.dismiss());
         SettingsPageAdapter viewPagerAdapter = new SettingsPageAdapter(activity, new SettingsPage[]{
                 new GeneralSettings(bundle),
+                new TextContentSettings(bundle),
                 new NotificationSettings(bundle),
                 new PasscodeSettings(bundle),
                 new PurchaseSettings(bundle)

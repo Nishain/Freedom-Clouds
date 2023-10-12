@@ -5,16 +5,20 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
+import android.view.View;
 
+import com.ndds.freedomclouds.CenteredText;
 import com.ndds.freedomclouds.OpenGLScreen;
 import com.ndds.freedomclouds.R;
 
 import java.io.IOException;
+import java.util.Random;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -33,9 +37,25 @@ public class OrnamentRenderer implements GLSurfaceView.Renderer {
     Bitmap[] emblemImages;
     int emblemCount;
     private final boolean doGenerateDynamicArt;
+    private boolean showingDefaultBackPlate = true;
+    private static final float[] waveColor = getColor("#730517"),
+            waveColorQuickRotate = getColor("#57f482");
+    private Bitmap defaultBack, customBack;
+
+    private static float[] getColor(String hexColor) {
+        float[] color = new float[4];
+        int intColor = Integer.parseInt(hexColor.substring(1), 16);
+        color[3] = 1;
+        color[0] = ((intColor) >> 16) / 255f;
+        color[1] = ((intColor & 0xff00) >> 8) / 255f;
+        color[2] = (intColor & 0xff) / 255f;
+        return color;
+    }
 
     public final static String[] ORDER = "Wood,Trees and Leaves,Flower,Water,Rock and Stones,Diamond,Fire"
             .split(",");
+    private WaveDesign[] waveDesigns = new WaveDesign[4];
+    private WaveDesign[] waveDesignsOutlines = new WaveDesign[4];
 
     public float getAngleX() {
         return mAngleX;
@@ -43,6 +63,17 @@ public class OrnamentRenderer implements GLSurfaceView.Renderer {
 
     public float getAngleY() {
         return mAngleY;
+    }
+
+    public void updateBackPlate() {
+        customBack = generateCustomWritingBitmap();
+        if (surfaceView.backTitle == null) {
+            showingDefaultBackPlate = true;
+            bindPicture(defaultBack, 0);
+        } else {
+            showingDefaultBackPlate = false;
+            bindPicture(customBack, 0);
+        }
     }
 
     public OrnamentRenderer(Context context, OpenGLScreen surfaceView, boolean enableDynamicDrawing) {
@@ -124,12 +155,6 @@ public class OrnamentRenderer implements GLSurfaceView.Renderer {
 
     private int[] textures;
 
-    private Bitmap flipImage(Bitmap bitmap) {
-        android.graphics.Matrix matrix = new android.graphics.Matrix();
-        matrix.postRotate(180);
-        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-    }
-
     void wrapInsideOuterCircle(Bitmap image, Canvas canvas, Paint paint) {
         int offset = (int) (canvas.getHeight() * 0.08f);
         Bitmap newImage = Bitmap.createScaledBitmap(image, canvas.getWidth() - (offset * 2), canvas.getHeight() - (offset * 2), false);
@@ -137,9 +162,7 @@ public class OrnamentRenderer implements GLSurfaceView.Renderer {
     }
 
     Bitmap getImage(int resourceCode) {
-        Bitmap photo = BitmapFactory.decodeResource(context.getResources(), resourceCode);
-        photo = flipImage(photo);
-        return photo;
+        return BitmapFactory.decodeResource(context.getResources(), resourceCode);
     }
 
     private void bindPicture(Bitmap picture, int index) {
@@ -150,6 +173,39 @@ public class OrnamentRenderer implements GLSurfaceView.Renderer {
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
 
         GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, picture, 0);
+    }
+
+    public void shiftOrnament(boolean moveAway) {
+        horizontalShiftDirection = moveAway ? -1 : 1;
+    }
+
+    public void setHorizontalShift(float value) {
+        horizontalShift = value;
+    }
+
+    private Bitmap generateCustomWritingBitmap() {
+        if (surfaceView.backTitle == null) return null;
+        Bitmap background = BitmapFactory.decodeResource(surfaceView.activity.getResources(), R.drawable.emblem_background);
+        Bitmap finalResult = background.copy(Bitmap.Config.ARGB_8888, true);
+        Canvas backgroundCover = new Canvas(finalResult);
+        Bitmap resultantMutatedImage = Bitmap.createBitmap(background.getWidth(), background.getHeight(), Bitmap.Config.ARGB_8888);
+        Paint paint = new Paint();
+        Canvas canvas = new Canvas(resultantMutatedImage);
+
+        paint.setStyle(Paint.Style.FILL_AND_STROKE);
+        int backgroundColor = Color.parseColor("#ffd966");
+        paint.setColor(backgroundColor);
+        float radius = resultantMutatedImage.getHeight() / 2f;
+        canvas.drawCircle(radius, radius, radius, paint);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setColor(Color.BLACK);
+        canvas.drawCircle(radius, radius, radius, paint);
+
+        float sizeInPixel = surfaceView.activity.getResources().getDisplayMetrics().density * 60;
+        new CenteredText(canvas, sizeInPixel, "#bc5611", backgroundColor)
+                .drawText(surfaceView.backTitle);
+        wrapInsideOuterCircle(resultantMutatedImage, backgroundCover, paint);
+        return finalResult;
     }
 
     private void createDynamicImage(int index) {
@@ -171,10 +227,10 @@ public class OrnamentRenderer implements GLSurfaceView.Renderer {
         Paint paint = new Paint();
         Bitmap resultantMutatedImage = background.copy(background.getConfig(), true);
         Canvas canvas = new Canvas(resultantMutatedImage);
-        Bitmap backSide = getImage(R.drawable.emblem_back);
+        customBack = generateCustomWritingBitmap();
+        defaultBack = getImage(R.drawable.emblem_back);
+        bindPicture(defaultBack, 0);
         wrapInsideOuterCircle(getImage(R.drawable.emblem_glow), canvas, paint);
-
-        bindPicture(backSide, 0);
         bindPicture(resultantMutatedImage, 1);
 
         if (doGenerateDynamicArt) {
@@ -183,7 +239,7 @@ public class OrnamentRenderer implements GLSurfaceView.Renderer {
         }
         for (int i = 0; i < emblemImages.length; i++) {
             wrapInsideOuterCircle(emblemImages[i], canvas, paint);
-            bindPicture(flipImage(resultantMutatedImage), i + 2);
+            bindPicture(resultantMutatedImage, i + 2);
         }
         emblemCount = emblemImages.length;
 
@@ -191,6 +247,19 @@ public class OrnamentRenderer implements GLSurfaceView.Renderer {
         program = GLES20.glCreateProgram();
         textureCircle1 = new Circle(-0.0625f, program);
         textureCircle2 = new Circle(0.0625f, program);
+        waveDesigns = new WaveDesign[] {
+                new WaveDesign(program,0.0625f, 30, 0),
+                new WaveDesign(program, 0.0625f, 120, 0),
+                new WaveDesign(program,0.0625f, 210, 0),
+                new WaveDesign(program, 0.0625f, 300, 0)
+        };
+
+        waveDesignsOutlines = new WaveDesign[] {
+                new WaveDesign(program,0.0625f, 30, outlineOffset),
+                new WaveDesign(program, 0.0625f, 120, outlineOffset),
+                new WaveDesign(program,0.0625f, 210, outlineOffset),
+                new WaveDesign(program, 0.0625f, 300, outlineOffset)
+        };
         cylinder = new Cylinder(0.0625f, program, .5f);
         cylinder.color = new float[]{ 1.0f, 0.64705882f, 0.0f, 1.0f };
         outlineCircle1 = new Circle(-0.0625f - outlineOffset, program, .5f + outlineOffset);
@@ -241,6 +310,8 @@ public class OrnamentRenderer implements GLSurfaceView.Renderer {
     public double brightnessFactor = 1f;
     public int doGlow = 0;
     public int quickSpinAngle = 0;
+    float horizontalShift = 0;
+    int horizontalShiftDirection = 0;
     int currentN = -1;
     int previousRotationIndex = -1;
 
@@ -254,7 +325,7 @@ public class OrnamentRenderer implements GLSurfaceView.Renderer {
     @Override
     public void onDrawFrame(GL10 gl) {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-        Matrix.setLookAtM(viewMatrix, 0, 0, 0, -4f, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
+        Matrix.setLookAtM(viewMatrix, 0, 0, 0, -4f, -horizontalShift, 0f, 0f, 0f, 1.0f, 0.0f);
 
         // Calculate the projection and view transformation
         Matrix.multiplyMM(vPMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
@@ -322,11 +393,15 @@ public class OrnamentRenderer implements GLSurfaceView.Renderer {
             }
         }
         int n = Math.abs((int) (mAngleX / 360));
-        if (doGenerateDynamicArt && previousRotationIndex != n) {
+        if (previousRotationIndex != n) {
             if (quickSpinAngle == 0) {
                 previousRotationIndex = n;
                 int index = 2 + Math.abs(n % emblemCount);
-                createDynamicImage(index);
+                if (surfaceView.backTitle != null && new Random().nextBoolean()) {
+                    showingDefaultBackPlate = !showingDefaultBackPlate;
+                    bindPicture(showingDefaultBackPlate ? defaultBack : customBack, 0);
+                }
+                if (doGenerateDynamicArt) createDynamicImage(index);
             }
         }
         Matrix.rotateM(rotationMatrixX, 0, mAngleX, 0, 1.0f, 0);
@@ -351,14 +426,27 @@ public class OrnamentRenderer implements GLSurfaceView.Renderer {
             textureCircle1.draw(textures[2 + Math.abs(n % emblemCount)], textures[2 + Math.abs((n + 1) % emblemCount)], calculateTransitionFadeFactor(Math.abs(mAngleX) % 360), brightnessFactor);
         cylinder.draw(brightnessFactor);
         textureCircle2.draw(textures[0], -99, 0, brightnessFactor);
+        float[] calculatedWaveColor = new float[] {
+                (waveColor[0] * (1 - blendFactor)) + (waveColorQuickRotate[0] * blendFactor),
+                (waveColor[1] * (1 - blendFactor)) + (waveColorQuickRotate[1] * blendFactor),
+                (waveColor[2] * (1 - blendFactor)) + (waveColorQuickRotate[2] * blendFactor),
+                1
+        };
+
+        for (int i = 0; i < waveDesigns.length; i++) {
+            waveDesigns[i].color = calculatedWaveColor;
+            waveDesigns[i].drawWithShapeMutation((int) mAngleX, brightnessFactor);
+        }
         Matrix.translateM(outlineTranslator, 0, 0, 0, 0.5f);
         Matrix.multiplyMM(scratch, 0, outlineTranslator, 0, scratch, 0);
         //Matrix.multiplyMM(scratch, 0, outlineTranslator, 0, scratch, 0);
         GLES20.glUniformMatrix4fv(vPMatrixHandle, 1, false, scratch, 0);
+        for (int i = 0; i < waveDesigns.length; i++) {
+            waveDesignsOutlines[i].drawWithShapeMutation((int) mAngleX, brightnessFactor);
+        }
         outlineCircle1.draw(brightnessFactor);
         cylinder2.draw(brightnessFactor);
         outlineCircle2.draw(brightnessFactor);
-
     }
 
     private float calculateTransitionFadeFactor(float angle) {

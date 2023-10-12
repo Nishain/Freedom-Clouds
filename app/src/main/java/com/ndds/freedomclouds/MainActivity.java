@@ -7,6 +7,7 @@ import android.app.DatePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
@@ -17,6 +18,7 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.DatePicker;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -27,6 +29,7 @@ import com.ndds.freedomclouds.common.Message;
 import com.ndds.freedomclouds.notifications.NotificationHandler;
 import com.ndds.freedomclouds.settings.PurchaseSettings;
 import com.ndds.freedomclouds.settings.Settings;
+import com.ndds.freedomclouds.settings.TextContentSettings;
 
 import java.util.Calendar;
 
@@ -45,15 +48,15 @@ public class MainActivity extends AppCompatActivity implements MainActivityCallb
     private PasscodeShield passcodeShield;
 
     public void rebuildOpenGLScreen(boolean isDynamicDrawingEnabled) {
-        ((ViewGroup)findViewById(R.id.root)).removeViewAt(0);
+        ((ViewGroup)findViewById(R.id.emblemContainer)).removeViewAt(0);
         buildOpenGLScreen()
                 .initOrnamentRenderer(isDynamicDrawingEnabled);
     }
 
     private OpenGLScreen buildOpenGLScreen() {
         findViewById(R.id.emblem_loading_indicator).setVisibility(View.VISIBLE);
-        openGLScreen = new OpenGLScreen(this);
-        ((ViewGroup) findViewById(R.id.root)).addView(openGLScreen, 0, new ViewGroup.LayoutParams(
+        openGLScreen = new OpenGLScreen(this, sharedPreferences.getString(TextContentSettings.EVENT_DESCRIPTION, null));
+        ((ViewGroup) findViewById(R.id.emblemContainer)).addView(openGLScreen, 0, new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
         ));
@@ -94,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityCallb
         } else {
             audio.pauseAll();
         }
-        ambientLightResponder.release();
+        if (ambientLightResponder != null) ambientLightResponder.release();
         updateCheckManager.pauseUIUpdate();
     }
 
@@ -117,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityCallb
         passcodeShield.show();
         updateCheckManager.resumeUIUpdate();
         if (ambientLightResponder != null) {
-            ambientLightResponder.activateSensor();
+            ambientLightResponder.resumeSensor();
         }
         super.onResume();
     }
@@ -133,8 +136,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityCallb
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        overridePendingTransition(0,0);
         setContentView(R.layout.activity_main);
 
         applyTypeFace(new int[] {
@@ -154,7 +155,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityCallb
             showDate(date.get(Calendar.YEAR), date.get(Calendar.MONTH), date.get(Calendar.DATE));
         }
         quotesMaker = new QuotesMaker(this);
-        new CurtainAnimation(this, sharedPreferences).startAnimate();
+        new CurtainAnimation(this, sharedPreferences).showSplashScreen(passcodeShield);
 
         View v = findViewById(R.id.rotate_hint);
         rotateHintAnimator = ObjectAnimator.ofFloat(v, "alpha", 0, 1);
@@ -240,18 +241,13 @@ public class MainActivity extends AppCompatActivity implements MainActivityCallb
 
     @Override
     public void onAmbientLightResponsivenessChanged(boolean isResponsive) {
-        ambientLightResponder.isAmbientLightResponsive(isResponsive);
+        ambientLightResponder.setAmbientResponsiveness(isResponsive);
     }
 
     @Override
     public void onAmbientBrightnessChanged(double brightnessFactor) {
         openGLScreen.setBrightnessFactor(brightnessFactor);
         backgroundImage.changeBrightness(brightnessFactor);
-    }
-
-    @Override
-    public boolean isAmbientLightResponsive() {
-        return ambientLightResponder.isAmbientLightResponsive();
     }
 
     @Override
@@ -262,6 +258,11 @@ public class MainActivity extends AppCompatActivity implements MainActivityCallb
     @Override
     public void shouldDrawDynamicEmblem(boolean enable) {
         rebuildOpenGLScreen(enable);
+    }
+
+    @Override
+    public void onUpdateEventTitle(String title) {
+        openGLScreen.setBackTitle(title);
     }
 
     public void unwrapGift(){
@@ -289,6 +290,20 @@ public class MainActivity extends AppCompatActivity implements MainActivityCallb
         audio.playSound(R.raw.paper_flip);
     }
 
+    public void showDeveloperNote() {
+        View view = findViewById(R.id.developerNoteOverlay);
+        view.setPadding(
+                (int) (getWindow().getDecorView().getWidth() * 0.25f),
+                0,
+                0,
+                0
+        );
+        view.findViewById(R.id.closeDeveloperNote).setOnClickListener((View v) -> {
+            openGLScreen.playShiftAnimation(false, view);
+        });
+        openGLScreen.playShiftAnimation(true, view);
+    }
+
     @Override
     public void openCurtain(Boolean isNewUser) {
         if(isNewUser) {
@@ -305,7 +320,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityCallb
         }
         backgroundImage = findViewById(R.id.backgroundHueController);
         backgroundImage.init(this);
-        ambientLightResponder = new AmbientLightResponder(this);
+        ambientLightResponder = new AmbientLightResponder(this, sharedPreferences);
     }
 
     @Override

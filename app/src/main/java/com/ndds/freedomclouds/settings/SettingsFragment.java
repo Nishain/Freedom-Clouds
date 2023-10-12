@@ -22,7 +22,6 @@ public class SettingsFragment extends Fragment {
         View root = getView();
         if (root != null)
             root.requestLayout();
-
     }
 
     @Nullable

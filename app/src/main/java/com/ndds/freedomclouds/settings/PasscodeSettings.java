@@ -19,15 +19,16 @@ class PasscodeSettings extends SettingsPage {
         }
 
         sharedPreferences.edit().putString(PASSCODE, newPasscode).apply();
-        Message.show(activity, "Passcode is now enabled");
+        if (textWatcher.value == null)
+            Message.show(activity, "Passcode is now enabled");
+        else Message.show(activity, "Passcode got updated");
         textWatcher.updateValue(newPasscode);
     }
 
     private void onRemovePasscode(VoidAwareTextWatcher textWatcher) {
-        if(textWatcher.clearValue()) {
-            Message.show(activity, "Passcode is disabled");
-            sharedPreferences.edit().remove(PASSCODE).apply();
-        }
+        textWatcher.clearValue();
+        Message.show(activity, "Passcode is disabled");
+        sharedPreferences.edit().remove(PASSCODE).apply();
     }
 
     @Override

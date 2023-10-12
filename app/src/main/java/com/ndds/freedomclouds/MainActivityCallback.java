@@ -5,7 +5,7 @@ public interface MainActivityCallback {
     void updateDate(int year, int month, int dayOfMonth);
     void onAmbientLightResponsivenessChanged(boolean isResponsive);
     void onAmbientBrightnessChanged(double brightnessFactor);
-    boolean isAmbientLightResponsive();
     void setTaskAfterSecurityUnlock(PasscodeShield.TaskAfterUnlock task);
     void shouldDrawDynamicEmblem(boolean enable);
+    void onUpdateEventTitle(String title);
 }

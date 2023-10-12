@@ -17,16 +17,17 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.TextView;
 
+import com.ndds.freedomclouds.AmbientLightResponder;
 import com.ndds.freedomclouds.BuildConfig;
-import com.ndds.freedomclouds.common.ActionButton;
 import com.ndds.freedomclouds.R;
+import com.ndds.freedomclouds.common.ActionButton;
 import com.ndds.freedomclouds.common.Message;
+import com.ndds.freedomclouds.common.SheetAlert;
 import com.ndds.freedomclouds.notifications.NotificationHandler;
 
 import java.util.Calendar;
 
 class GeneralSettings extends SettingsPage implements DatePickerDialog.OnDateSetListener {
-
     public GeneralSettings(Settings.Bundle bundle) {
         super(bundle.activity, bundle.sharedPreferences, R.layout.settings_general, "General", bundle.dialog);
     }
@@ -92,21 +93,27 @@ class GeneralSettings extends SettingsPage implements DatePickerDialog.OnDateSet
     }
 
     private void onAmbientLightResponsivenessChanged(Boolean isResponsive) {
+        sharedPreferences.edit().putBoolean(AmbientLightResponder.AMBIENT_LIGHT_RESPONSIVE, isResponsive).apply();
         activity.onAmbientLightResponsivenessChanged(isResponsive);
     }
 
     private void openDeveloperNote() {
-        ViewGroup viewGroup = (ViewGroup) activity.getLayoutInflater().inflate(R.layout.developer_note,null);
-        AssetManager assetManager = activity.getAssets();
-        for (int i = 0; i < viewGroup.getChildCount(); i++) {
-            View view = viewGroup.getChildAt(i);
-            if(view instanceof TextView && !(view instanceof Button))
-                ((TextView) view).setTypeface(Typeface.createFromAsset(assetManager,"fonts/CherrySwash-Regular.ttf"));
-        }
-        AlertDialog noteAlert = new AlertDialog.Builder(activity).setView(viewGroup).create();
-        viewGroup.findViewById(R.id.developer_note_ok).setOnClickListener(v1 -> noteAlert.dismiss());
-        noteAlert.show();
-        activity.audio.playSound(R.raw.paper_flip);
+        new Handler().postDelayed(() -> {
+            activity.audio.playSound(R.raw.paper_flip);
+            activity.showDeveloperNote();
+        }, SheetAlert.DURATION + 100);
+        dialog.dismiss();
+//        ViewGroup viewGroup = (ViewGroup) activity.getLayoutInflater().inflate(R.layout.developer_note,null);
+//        AssetManager assetManager = activity.getAssets();
+//        for (int i = 0; i < viewGroup.getChildCount(); i++) {
+//            View view = viewGroup.getChildAt(i);
+//            if(view instanceof TextView && !(view instanceof Button))
+//                ((TextView) view).setTypeface(Typeface.createFromAsset(assetManager,"fonts/CherrySwash-Regular.ttf"));
+//        }
+//        AlertDialog noteAlert = new AlertDialog.Builder(activity).setView(viewGroup).create();
+//        viewGroup.findViewById(R.id.developer_note_ok).setOnClickListener(v1 -> noteAlert.dismiss());
+//        noteAlert.show();
+
     }
 
     @Override
@@ -118,7 +125,12 @@ class GeneralSettings extends SettingsPage implements DatePickerDialog.OnDateSet
         setListener(R.id.rate_app, this:: rateApp);
         ((TextView) settingsView.findViewById(R.id.versionIndicator))
                 .setText(String.format("Version %s", BuildConfig.VERSION_NAME));
-        setSwitchListener(R.id.settings_ambient_light, activity.isAmbientLightResponsive(), this::onAmbientLightResponsivenessChanged);
+
+        setSwitchListener(
+                R.id.settings_ambient_light,
+                sharedPreferences.getBoolean(AmbientLightResponder.AMBIENT_LIGHT_RESPONSIVE, true),
+                this::onAmbientLightResponsivenessChanged
+        );
     }
 
     @Override

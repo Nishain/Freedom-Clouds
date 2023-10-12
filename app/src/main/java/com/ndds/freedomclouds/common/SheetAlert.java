@@ -21,6 +21,7 @@ public class SheetAlert {
     private final View rootView;
     private final AlertDialog dialog;
     private final Position position;
+    public static final int DURATION = 500;
 
     public SheetAlert(View contentView, Context context, Position position) {
         this.position = position;
@@ -37,7 +38,7 @@ public class SheetAlert {
             else
                 direction[0] = rootView.getHeight();
             ObjectAnimator animator = ObjectAnimator.ofFloat(rootView, "translationY", direction);
-            animator.setDuration(500);
+            animator.setDuration(DURATION);
             animator.start();
             rootView.setVisibility(View.VISIBLE);
         });
@@ -74,7 +75,7 @@ public class SheetAlert {
             direction[1] = rootView.getHeight();
         }
         ObjectAnimator animator = ObjectAnimator.ofFloat(rootView, "translationY", direction);
-        animator.setDuration(500);
+        animator.setDuration(DURATION);
         animator.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(@NonNull Animator animation) {

@@ -2,16 +2,22 @@ package com.ndds.freedomclouds.rendering;
 
 import android.opengl.GLES20;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.nio.MappedByteBuffer;
+import java.util.BitSet;
 
 public class Shape {
     // number of coordinates per vertex in this array
     static final int COORDINATES_PER_VERTEX = 3;
     protected FloatBuffer vertexBuffer;
     protected int mProgram = 0;
+    protected int positionVertexSize = 0;
+
     protected FloatBuffer buildBuffer(float[] positions) {
+        positionVertexSize = positions.length / COORDINATES_PER_VERTEX;
         // initialize vertex byte buffer for shape coordinates
         ByteBuffer bb = ByteBuffer.allocateDirect(positions.length * 4);
         // (# of coordinate values * 4 bytes per float)
@@ -54,7 +60,7 @@ public class Shape {
         GLES20.glUniform4fv(colorHandle, 1, blendedColor, 0);
 
         // Draw the triangle
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, (360 * 6));
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, positionVertexSize);
 
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(positionHandle);

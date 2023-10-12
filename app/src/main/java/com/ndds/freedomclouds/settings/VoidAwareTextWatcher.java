@@ -45,23 +45,18 @@ public class VoidAwareTextWatcher implements TextWatcher {
             actionButton.setColorTheme(R.color.beautyBlue);
         }
         value = newValue;
-
     }
 
-    boolean clearValue() {
-        if (value != null) {
-            actionButton.setVisibility(View.VISIBLE);
-            actionButton.setText(createText);
-            deleteButton.setVisibility(View.GONE);
-            actionButton.setColorTheme(R.color.beautyGreen);
-            value = null;
-            if (!inputString.isEmpty()) {
-                editText.setText("");
-                inputString = "";
-            }
-            return true;
+    void clearValue() {
+        actionButton.setVisibility(View.VISIBLE);
+        actionButton.setText(createText);
+        deleteButton.setVisibility(View.GONE);
+        actionButton.setColorTheme(R.color.beautyGreen);
+        value = null;
+        if (!inputString.isEmpty()) {
+            editText.setText("");
+            inputString = "";
         }
-        return false;
     }
 
     protected Boolean onChange(boolean wasInDelete) {

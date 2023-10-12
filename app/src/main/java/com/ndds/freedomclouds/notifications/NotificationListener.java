@@ -13,6 +13,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 import com.ndds.freedomclouds.R;
+import com.ndds.freedomclouds.settings.TextContentSettings;
 
 public class NotificationListener extends BroadcastReceiver {
     final static String CHANNEL_ID = "reminder";
@@ -30,6 +31,11 @@ public class NotificationListener extends BroadcastReceiver {
         String textContent = notificationHandler.getNotificationContent();
         notificationContent.setTextViewText(R.id.notificationMessage, textContent);
         notificationContentLarge.setTextViewText(R.id.notificationMessage, textContent);
+        String eventTitle = context
+                .getSharedPreferences("configuration",Context.MODE_PRIVATE)
+                .getString(TextContentSettings.EVENT_TITLE, null);
+        if (eventTitle != null)
+            notificationContentLarge.setTextViewText(R.id.notification_title, eventTitle);
 
         Notification notification = builder.setContentTitle("Event Reminder")
                 .setCustomContentView(notificationContent)

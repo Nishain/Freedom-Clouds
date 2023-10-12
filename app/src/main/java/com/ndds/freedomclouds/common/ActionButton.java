@@ -5,27 +5,37 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.LinearLayout;
+
+import androidx.annotation.Nullable;
 
 import com.ndds.freedomclouds.R;
 
 public class ActionButton extends androidx.appcompat.widget.AppCompatButton implements View.OnTouchListener {
 
-    Paint paint = new Paint();
-    int radius;
+    Paint backgroundPaint = new Paint();
+    Paint outlinePaint = new Paint();
     int strokeWidth;
     int backgroundColor;
 
     private void init(Context context) {
         DisplayMetrics metrics = context.getResources().getDisplayMetrics();
-        radius = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 15, metrics);
         setBackgroundColor(Color.TRANSPARENT);
+        backgroundPaint.setAntiAlias(true);
+        backgroundPaint.setColor(backgroundColor);
+        backgroundPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+
         strokeWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2, metrics);
+        outlinePaint.setStyle(Paint.Style.STROKE);
+        outlinePaint.setColor(Color.BLACK);
+        outlinePaint.setStrokeWidth(strokeWidth);
         setOnTouchListener(this);
     }
 
@@ -58,15 +68,17 @@ public class ActionButton extends androidx.appcompat.widget.AppCompatButton impl
     }
 
     @Override
+    public void setEnabled(boolean enabled) {
+        setAlpha(enabled ? 1 : 0.5f);
+        super.setEnabled(enabled);
+    }
+
+    @Override
     protected void onDraw(Canvas canvas) {
-        paint.setColor(backgroundColor);
-        paint.setStyle(Paint.Style.FILL_AND_STROKE);
+        float radius = getHeight() / 2f;
         RectF roundedRect = new RectF(strokeWidth, strokeWidth, getWidth() - strokeWidth, getHeight() - strokeWidth);
-        canvas.drawRoundRect(roundedRect, radius, radius, paint);
-        paint.setColor(Color.BLACK);
-        paint.setStrokeWidth(5);
-        paint.setStyle(Paint.Style.STROKE);
-        canvas.drawRoundRect(roundedRect, radius, radius, paint);
+        canvas.drawRoundRect(roundedRect, radius, radius, backgroundPaint);
+        canvas.drawRoundRect(roundedRect, radius, radius, outlinePaint);
         super.onDraw(canvas);
     }
 

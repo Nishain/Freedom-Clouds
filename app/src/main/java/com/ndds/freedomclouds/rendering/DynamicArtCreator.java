@@ -15,13 +15,13 @@ public class DynamicArtCreator {
             // first color - background color
             // second color - outline colors rest are content colors
             // color theme correspond to OrnamentRenderer.ORDER
-            "#ffd966,#853b0b,#be9002,#c65911,#7f6000,#f4b183",
+            "#ffd966,#853b0b,#be9002,#c65911,#ffbb6d,#f4b183",
             "#01de64,#385723,#feff00,#a9d18e,#e2f0d9,#fee699",
             "#ff9c9b,#c00000,#86a7fa,#fee699,#ff5050,#ff9900,#ffd966,#f10373,#f78253",
-            "#04aff0,#203864,#6476fc,#86a7fa,#003399,#deebf7,#8faadc",
-            "#ffffff,#595959,#86a7fa,#bfbfbf,#8f84fc,#7c7c7c,#deebf7,#adb9ca,#ffd966",
+            "#04aff0,#203864,#6476fc,#86a7fa,#09f7dc,#deebf7,#2dff8b,#df8af6",
+            "#dfdcb9,#595959,#86a7fa,#bfbfbf,#8f84fc,#7c7c7c,#deebf7,#34b5ff,#ffd966",
             "#df8af6,#7030a0,#2dff8b,#9900ff,#ff3399,#04aff0,#86a7fa,#cc02ff,#b4c7e7,#cc99ff",
-            "#ff9933,#a40221,#feff00,#ff0200,#ff6600,#fee699,#ff7c80,#ffcc01,#c00000"
+            "#f1a672,#a40221,#feff00,#ff0200,#ff6600,#fee699,#ff7c80,#ffcc01,#c00000"
 
     };
 
@@ -99,7 +99,7 @@ public class DynamicArtCreator {
         Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         Bitmap[] emblemImages = new Bitmap[7];
-        int emblemSize = bitmap.getWidth() / 3;
+        int emblemSize = (int) (bitmap.getHeight() / 2.5f);
         DynamicArtCreator artCreator = new DynamicArtCreator(500, 500);
         int angle = 300;
 

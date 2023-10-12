@@ -7,11 +7,11 @@ public class Cylinder extends Shape {
         int j;
         for(int i = 0; i < 360; i += 1) {
             j =  18 * i;
-            float distanceX = (float) (radius*Math.sin(i*Math.PI/180f));
-            float distanceY = (float) (radius*Math.cos(i*Math.PI/180f));
+            float distanceX = (float) (radius * Math.sin(Math.toRadians(i)));
+            float distanceY = (float) (radius * Math.cos(i*Math.PI/180f));
 
-            float nextDistanceX = (float) (radius*Math.sin((i + 1) * Math.PI/180f));
-            float nextDistanceY = (float) (radius*Math.cos((i + 1) * Math.PI/180f));
+            float nextDistanceX = (float) (radius * Math.sin(Math.toRadians(i + 1)));
+            float nextDistanceY = (float) (radius * Math.cos(Math.toRadians(i + 1)));
 
             positions[j] = distanceX;
             positions[j + 1] = distanceY;

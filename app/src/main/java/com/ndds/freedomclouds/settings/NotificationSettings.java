@@ -92,10 +92,9 @@ public class NotificationSettings extends SettingsPage implements TimePickerDial
     }
 
     private void onDeleteInterval() {
-        if(textWatcher.clearValue()) {
-            notificationHandler.removeNotifications();
-            Message.show(activity, "Notifications disabled");
-        }
+        textWatcher.clearValue();
+        notificationHandler.removeNotifications();
+        Message.show(activity, "Notifications disabled");
     }
 
     private void onCreateOrUpdateInterval() {
@@ -109,7 +108,9 @@ public class NotificationSettings extends SettingsPage implements TimePickerDial
             Message.show(activity, "Interval is too long maximum is 60 days");
             return;
         }
-        Message.show(activity, "Notification interval updated");
+        if (textWatcher.value == null)
+            Message.show(activity, "Notification will be shown on each " + newIntervalString + " day(s)");
+        else Message.show(activity, "Notification interval updated");
         notificationHandler.setRepeatNotification(newInterval);
         textWatcher.updateValue(newIntervalString);
     }

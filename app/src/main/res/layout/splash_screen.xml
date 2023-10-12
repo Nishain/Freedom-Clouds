@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/orange_splash"
-    tools:context=".SplashScreen">
+    android:background="@drawable/orange_splash">
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -38,8 +37,7 @@
             android:linksClickable="true"
             android:text="By using this app you agree to our privacy policy"
             android:textColor="@android:color/white"
-            android:textColorLink="@color/beautyGreen"
-            android:visibility="invisible" />
+            android:textColorLink="@color/beautyGreen" />
     </LinearLayout>
 
 </FrameLayout>

@@ -2,15 +2,16 @@ package com.ndds.freedomclouds.rendering;
 
 import android.opengl.GLES20;
 
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.Arrays;
 
-public class Circle extends Shape{
+public class Circle extends Shape {
     private FloatBuffer textureBuffer;
 
     public Circle(float depth,int program,float radius){
         mProgram = program;
-        float[] positions = new float[(360 * 18)];
-        // THIS WAS A FIXED THE ISSUE WHEN CONVERTED EARLIER VALUE FROM 9 TO 18 AND I DON'T WHY??!
+        float[] positions = new float[(360 * 9)];
         int j;
         for(int i=0;i<360;i+=1){
             j =  9 * i;
@@ -45,23 +46,23 @@ public class Circle extends Shape{
             positions[j + 1] = 0.0f;
             positions[j + 2] = depth;
 
-            float distanceX = (float) (0.5*Math.sin(i*Math.PI/180f));
-            float nextDistanceX = (float) (0.5*Math.sin((i + 1)*Math.PI/180f));
+            float distanceX = (float) (0.5 * Math.sin(Math.toRadians(i)));
+            float nextDistanceX = (float) (0.5 * Math.sin((Math.toRadians(i + 1))));
 
-            float distanceY = (float) (0.5*Math.cos(i*Math.PI/180f));
-            float nextDistanceY = (float) (0.5*Math.cos((i + 1)*Math.PI/180f));
+            float distanceY = (float) (0.5 * Math.cos(Math.toRadians(i)));
+            float nextDistanceY = (float) (0.5 * Math.cos(Math.toRadians(i + 1)));
 
             positions[j + 3] = distanceX;
             positions[j + 4] = distanceY;
             positions[j + 5] = depth;
             textureCoordinates[k + 2] = distanceX + 0.5f;
-            textureCoordinates[k + 3] = distanceY + 0.5f;
+            textureCoordinates[k + 3] = -distanceY + 0.5f;
 
             positions[j + 6] = nextDistanceX;
             positions[j + 7] = nextDistanceY;
             positions[j + 8] = depth;
             textureCoordinates[k + 4] = nextDistanceX + 0.5f;
-            textureCoordinates[k + 5] = nextDistanceY + 0.5f;
+            textureCoordinates[k + 5] = -nextDistanceY + 0.5f;
         }
 
         vertexBuffer = buildBuffer(positions);

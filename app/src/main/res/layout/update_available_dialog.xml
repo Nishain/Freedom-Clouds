@@ -14,10 +14,11 @@
         android:src="@drawable/introduction_background"
         android:scaleType="centerCrop"
         />
-    <LinearLayout
+    <com.ndds.freedomclouds.common.InsetSafeLinearLayout
         android:id="@+id/innerContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:placement="top"
         android:paddingHorizontal="12dp"
         android:paddingVertical="40dp"
         android:gravity="center"
@@ -54,6 +55,6 @@
                 android:text="Update" />
 
         </TableRow>
-    </LinearLayout>
+    </com.ndds.freedomclouds.common.InsetSafeLinearLayout>
 
 </RelativeLayout>

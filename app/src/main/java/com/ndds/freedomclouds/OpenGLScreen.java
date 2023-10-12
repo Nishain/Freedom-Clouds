@@ -1,24 +1,76 @@
 package com.ndds.freedomclouds;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
+import android.annotation.SuppressLint;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.os.Handler;
 import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
 
+import com.ndds.freedomclouds.common.Message;
 import com.ndds.freedomclouds.rendering.GiftRenderer;
 import com.ndds.freedomclouds.rendering.OrnamentRenderer;
 
+@SuppressLint("ViewConstructor")
 public class OpenGLScreen extends GLSurfaceView {
     OrnamentRenderer ornamentRenderer = null;
     public MainActivity activity;
+    public String backTitle;
     private boolean isGiftRenderer;
     private boolean needToPlayEmblemSound = true;
 
+    public void setBackTitle(String title) {
+        backTitle = title;
+        queueEvent(() -> {
+            ornamentRenderer.updateBackPlate();
+        });
+    }
 
-    public OpenGLScreen(MainActivity activity) {
+    public void playShiftAnimation(boolean moveAway, View target) {
+        final float offset = 0.8f;
+        ObjectAnimator shiftAnimator = ObjectAnimator.ofFloat(ornamentRenderer, "horizontalShift", moveAway? 0 : offset, moveAway ? offset : 0)
+                .setDuration(1000);
+        ObjectAnimator alphaAnimator = ObjectAnimator.
+                ofFloat(target, "alpha", moveAway ? 0: 1, moveAway ? 1 : 0)
+                .setDuration(1000);
+
+        shiftAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                setRenderMode(RENDERMODE_WHEN_DIRTY);
+                if (moveAway) alphaAnimator.start();
+            }
+
+            @Override
+            public void onAnimationStart(Animator animation) {
+                setRenderMode(RENDERMODE_CONTINUOUSLY);
+            }
+        });
+
+        if (moveAway) {
+            target.setAlpha(0);
+            target.setVisibility(VISIBLE);
+            shiftAnimator.start();
+        } else {
+            alphaAnimator.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    target.setVisibility(GONE);
+                    shiftAnimator.start();
+                }
+            });
+            alphaAnimator.start();
+        }
+    }
+
+    public OpenGLScreen(MainActivity activity, String title) {
         super(activity);
         this.activity = activity;
+        backTitle = title;
         setEGLContextClientVersion(2);
         getHolder().setFormat(PixelFormat.TRANSPARENT);
         setZOrderOnTop(true);

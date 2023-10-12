@@ -123,7 +123,9 @@ public class PurchaseManager {
         getPurchaseInfo((billingResult, list) -> {
             if (billingResult.getResponseCode() != BillingClient.BillingResponseCode.OK) return;
             ProductDetails.OneTimePurchaseOfferDetails details = list.get(0).getOneTimePurchaseOfferDetails();
-            if (details != null) onLocalTextAvailable.onPriceAvailable(details.getFormattedPrice());
+            if (details != null) activity.runOnUiThread(() -> {
+                onLocalTextAvailable.onPriceAvailable(details.getFormattedPrice());
+            });
             billingClient.endConnection();
         });
     }

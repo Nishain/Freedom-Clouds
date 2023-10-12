@@ -24,19 +24,23 @@ public class PurchaseSettings extends SettingsPage {
     }
 
     private void handlePurchase(ActionButton purchaseButton) {
-        purchaseManager().promptPurchaseBill(this::preparePaidFeatures);
+        purchaseManager().promptPurchaseBill(() -> {
+            Message.show(activity, "Thanks for the purchase!");
+            preparePaidFeatures();
+        });
     }
 
     private void preparePaidFeatures() {
         setListener(R.id.purchaseBtn, this::toggleDynamicDrawing);
         toggleDynamicDrawing(settingsView.findViewById(R.id.purchaseBtn));
-        settingsView.findViewById(R.id.restorePurchaseBtn).setVisibility(View.GONE);
+        settingsView.findViewById(R.id.purchaseRestoreSection).setVisibility(View.GONE);
     }
 
     private void restorePurchase() {
         purchaseManager().restorePurchaseStatus(() -> {
             Message.show(activity, "Purchase restored");
             preparePaidFeatures();
+            dialog.dismiss();
         });
     }
 
@@ -68,13 +72,15 @@ public class PurchaseSettings extends SettingsPage {
         boolean isPurchased = sharedPreferences.getBoolean(PurchaseManager.PURCHASE_STATE, false);
         if (isPurchased) {
             setListener(R.id.purchaseBtn, this::toggleDynamicDrawing);
-            settingsView.findViewById(R.id.restorePurchaseBtn).setVisibility(View.GONE);
+            settingsView.findViewById(R.id.purchaseRestoreSection).setVisibility(View.GONE);
             isDynamicDrawingEnabled = sharedPreferences.getBoolean(DYNAMIC_DRAWING_ENABLED, false);
             updateButtonState();
         } else {
             Button purchaseButton = settingsView.findViewById(R.id.purchaseBtn);
+            purchaseButton.setEnabled(false);
             purchaseManager().getPriceString(formattedPrice -> {
-                activity.runOnUiThread(() -> purchaseButton.setText(formattedPrice));
+                purchaseButton.setText(formattedPrice);
+                purchaseButton.setEnabled(true);
             });
             setListener(R.id.purchaseBtn, this::handlePurchase);
             setListener(R.id.restorePurchaseBtn, this::restorePurchase);
